@@ -1,0 +1,23 @@
+---
+import { getCollection } from "astro:content";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import ArticleCard from "../../components/ArticleCard.astro";
+import { sortArticlesByUpdatedDesc } from "../../lib/articles";
+
+const articles = sortArticlesByUpdatedDesc(await getCollection("articles"));
+---
+
+<BaseLayout title="文章">
+  <header class="page-header">
+    <div class="container">
+      <p class="eyebrow">Articles</p>
+      <h1>全部文章</h1>
+      <p class="lead">按更新时间倒序排列。后续搜索和标签页接入后，可以从更多维度查找内容。</p>
+    </div>
+  </header>
+  <section class="section">
+    <div class="container article-list">
+      {articles.map((article) => <ArticleCard article={article} />)}
+    </div>
+  </section>
+</BaseLayout>

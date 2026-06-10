@@ -1,0 +1,41 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+
+const submissionFormUrl = import.meta.env.PUBLIC_SUBMISSION_FORM_URL;
+---
+
+<BaseLayout title="投稿">
+  <header class="page-header">
+    <div class="container">
+      <p class="eyebrow">Contribute</p>
+      <h1>校友投稿</h1>
+      <p class="lead">欢迎毕业校友分享高考备考、志愿填报、专业体验、大学生活和后续发展路径。</p>
+    </div>
+  </header>
+  <section class="section">
+    <div class="narrow prose">
+      <h2>可以投稿什么</h2>
+      <ul>
+        <li>高考备考节奏、学科经验和踩坑总结。</li>
+        <li>志愿填报复盘，以及学校、专业、城市之间的取舍。</li>
+        <li>大学专业真实体验、课程压力和适合人群。</li>
+        <li>大学生活、转专业、保研、考研、就业或实习经历。</li>
+      </ul>
+
+      <h2>隐私与审核</h2>
+      <ul>
+        <li>可以匿名投稿，也可以选择公开届别、学校或专业。</li>
+        <li>联系方式不会默认公开，仅用于维护者必要时回访确认。</li>
+        <li>内容发布前会经过整理和审核，避免公开未经授权的个人信息。</li>
+      </ul>
+
+      {
+        submissionFormUrl ? (
+          <p><a class="button" href={submissionFormUrl}>打开投稿表单</a></p>
+        ) : (
+          <p class="notice">投稿表单链接尚未配置。维护者可在 `.env` 中设置 `PUBLIC_SUBMISSION_FORM_URL`。</p>
+        )
+      }
+    </div>
+  </section>
+</BaseLayout>

@@ -1,0 +1,65 @@
+---
+const {
+  title = import.meta.env.PUBLIC_SITE_NAME || "高中校友升学经验库",
+  description = import.meta.env.PUBLIC_SITE_DESCRIPTION ||
+    "沉淀校友升学、专业与大学生活经验的静态资料库。"
+} = Astro.props;
+
+const siteName = import.meta.env.PUBLIC_SITE_NAME || "高中校友升学经验库";
+const navItems = [
+  { href: "/", label: "首页" },
+  { href: "/articles/", label: "文章" },
+  { href: "/search/", label: "搜索" },
+  { href: "/submit/", label: "投稿" },
+  { href: "/about/", label: "关于" }
+];
+
+const currentPath = Astro.url.pathname;
+---
+
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="description" content={description} />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="generator" content={Astro.generator} />
+    <title>{title === siteName ? siteName : `${title} | ${siteName}`}</title>
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  </head>
+  <body>
+    <div class="site-shell">
+      <header class="site-header">
+        <div class="container header-inner">
+          <a class="brand" href="/">{siteName}</a>
+          <nav class="site-nav" aria-label="主导航">
+            {
+              navItems.map((item) => (
+                <a
+                  href={item.href}
+                  aria-current={currentPath === item.href ? "page" : undefined}
+                >
+                  {item.label}
+                </a>
+              ))
+            }
+          </nav>
+        </div>
+      </header>
+      <main>
+        <slot />
+      </main>
+      <footer class="site-footer">
+        <div class="container">
+          <p>
+            本站为校友自发维护的公益性信息整理项目，并非学校官方平台。内容仅供参考，请以官方招生信息为准。
+          </p>
+        </div>
+      </footer>
+    </div>
+  </body>
+</html>
+
+<style is:global>
+  @import "../styles/global.css";
+</style>

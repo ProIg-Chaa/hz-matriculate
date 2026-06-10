@@ -22,3 +22,14 @@ export function formatDate(date: Date) {
     timeZone: "UTC"
   }).format(date);
 }
+
+export function getAuthorLabel(author: { name: string; anonymous: boolean }) {
+  return author.anonymous ? "匿名校友" : author.name;
+}
+
+export function getSchoolMajor(author: {
+  university?: string;
+  major?: string;
+}) {
+  return [author.university, author.major].filter(Boolean).join(" / ");
+}

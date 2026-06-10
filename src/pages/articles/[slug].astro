@@ -1,7 +1,7 @@
 ---
 import { getCollection, render } from "astro:content";
 import BaseLayout from "../../layouts/BaseLayout.astro";
-import { formatDate, getArticleSlug } from "../../lib/articles";
+import { formatDate, getArticleSlug, getAuthorLabel, getSchoolMajor } from "../../lib/articles";
 
 export async function getStaticPaths() {
   const articles = await getCollection("articles");
@@ -14,7 +14,7 @@ export async function getStaticPaths() {
 const { article } = Astro.props;
 const { Content } = await render(article);
 const author = article.data.author;
-const schoolMajor = [author.university, author.major].filter(Boolean).join(" / ");
+const schoolMajor = getSchoolMajor(author);
 ---
 
 <BaseLayout title={article.data.title} description={article.data.description}>
@@ -27,7 +27,7 @@ const schoolMajor = [author.university, author.major].filter(Boolean).join(" / "
         <div class="meta">
           <span>发布于 {formatDate(article.data.date)}</span>
           <span>更新于 {formatDate(article.data.updated)}</span>
-          <span>{author.anonymous ? author.name : author.name}</span>
+          <span>{getAuthorLabel(author)}</span>
         </div>
         <div class="chips" aria-label="文章标签">
           {article.data.tags.map((tag) => <span class="chip">{tag}</span>)}

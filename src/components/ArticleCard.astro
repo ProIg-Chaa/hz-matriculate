@@ -1,6 +1,6 @@
 ---
 import type { Article } from "../lib/articles";
-import { formatDate, getArticleUrl } from "../lib/articles";
+import { formatDate, getArticleUrl, getAuthorLabel, getSchoolMajor } from "../lib/articles";
 
 interface Props {
   article: Article;
@@ -10,8 +10,8 @@ interface Props {
 const { article, headingLevel = "h2" } = Astro.props;
 const Heading = headingLevel;
 const author = article.data.author;
-const authorLabel = author.anonymous ? author.name : author.name;
-const schoolMajor = [author.university, author.major].filter(Boolean).join(" / ");
+const authorLabel = getAuthorLabel(author);
+const schoolMajor = getSchoolMajor(author);
 ---
 
 <article class="article-card">

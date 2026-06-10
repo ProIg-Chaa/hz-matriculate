@@ -1,0 +1,31 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+---
+
+<BaseLayout title="关于">
+  <header class="page-header">
+    <div class="container">
+      <p class="eyebrow">About</p>
+      <h1>关于这个项目</h1>
+      <p class="lead">这是一个由校友自发维护的公益性信息整理项目，目标是把分散的个人经验沉淀为可持续积累的资料库。</p>
+    </div>
+  </header>
+  <section class="section">
+    <div class="narrow prose">
+      <h2>为什么做</h2>
+      <p>
+        高中生在备考、志愿填报和了解大学专业时，常常只能依赖零散聊天和单个故事。这个项目希望用统一模板和清晰标签，把真实经验整理成更容易查找、比较和复用的内容。
+      </p>
+
+      <h2>内容从哪里来</h2>
+      <p>
+        内容主要来自往届校友投稿，由维护者整理格式、补充边界说明并发布。文章表达的是个人经历，不代表学校官方意见。
+      </p>
+
+      <h2>如何维护</h2>
+      <p>
+        第一版采用静态站和 Markdown 内容文件，避免过早引入数据库、登录系统和复杂后台。维护者可以通过 GitHub 协作、审核和发布内容。
+      </p>
+    </div>
+  </section>
+</BaseLayout>

@@ -1,0 +1,86 @@
+---
+import { getCollection } from "astro:content";
+import BaseLayout from "../layouts/BaseLayout.astro";
+import ArticleCard from "../components/ArticleCard.astro";
+import { categories } from "../data/categories";
+import { sortArticlesByUpdatedDesc } from "../lib/articles";
+
+const allArticles = sortArticlesByUpdatedDesc(await getCollection("articles"));
+const featuredArticles = allArticles.filter((article) => article.data.display.featured).slice(0, 3);
+const latestArticles = allArticles.slice(0, 4);
+---
+
+<BaseLayout>
+  <section class="hero">
+    <div class="container hero-grid">
+      <div>
+        <p class="eyebrow">校友经验 · 静态资料库</p>
+        <h1>把升学路上的真实经验整理成可检索的资料。</h1>
+        <p class="lead">
+          面向高中在校生、毕业校友和维护者，沉淀高考备考、志愿填报、专业体验、大学生活与后续发展路径。
+        </p>
+        <div class="actions">
+          <a class="button" href="/articles/">浏览文章</a>
+          <a class="button secondary" href="/submit/">我要投稿</a>
+        </div>
+      </div>
+      <aside class="hero-note">
+        本站内容来自校友个人经验，仅供参考。涉及招生政策、专业组、选科要求和录取位次，请以官方信息为准。
+      </aside>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      <div class="section-heading">
+        <div>
+          <h2>主要分类</h2>
+          <p>先保持少量稳定分类，后续通过标签和搜索扩展发现路径。</p>
+        </div>
+      </div>
+      <div class="grid">
+        {
+          categories.map((category) => (
+            <article class="card">
+              <h3>{category.name}</h3>
+              <p>{category.description}</p>
+            </article>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      <div class="section-heading">
+        <div>
+          <h2>精选文章</h2>
+          <p>用于首页露出维护者认为最适合新读者先看的内容。</p>
+        </div>
+        <a href="/articles/">查看全部</a>
+      </div>
+      <div class="article-list">
+        {
+          featuredArticles.length > 0
+            ? featuredArticles.map((article) => <ArticleCard article={article} headingLevel="h3" />)
+            : <p class="notice">暂未设置精选文章。</p>
+        }
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      <div class="section-heading">
+        <div>
+          <h2>最新更新</h2>
+          <p>默认按更新时间倒序展示，方便维护者持续补充内容。</p>
+        </div>
+      </div>
+      <div class="article-list">
+        {latestArticles.map((article) => <ArticleCard article={article} headingLevel="h3" />)}
+      </div>
+    </div>
+  </section>
+</BaseLayout>

@@ -194,6 +194,36 @@ final version
 
 这类提交后期很难追踪问题。
 
+### 5.1 Devlog 记录规范
+
+每一次正式提交都必须同步添加或更新 `devlog/` 下的 Markdown 记录。
+
+Devlog 用来说明：
+
+```text
+这次为什么改
+具体改了什么
+做了哪些取舍
+如何验证
+后续还有什么边界或待办
+```
+
+文件命名建议：
+
+```text
+devlog/YYYY-MM-DD-short-topic.md
+```
+
+示例：
+
+```text
+devlog/2026-06-10-bootstrap-astro.md
+devlog/2026-06-12-add-pagefind-search.md
+devlog/2026-06-15-content-batch-01.md
+```
+
+如果同一天围绕同一个任务连续提交，可以更新同一篇 devlog；如果是无关任务，应新增独立 devlog。
+
 ---
 
 ## 6. Pull Request 规范
@@ -229,6 +259,7 @@ PR 描述建议包含：
 - [ ] 页面没有明显样式错误
 - [ ] 没有无关文件被提交
 - [ ] 移动端基本可用
+- [ ] 已添加或更新本次修改对应的 `devlog`
 
 ## 关联 Issue
 
@@ -488,6 +519,7 @@ PUBLIC_FORM_URL=
 * 不直接改 `main`。
 * 一个任务一个分支。
 * 一个 PR 只解决一个问题。
+* 每一次正式提交都必须添加或更新 `devlog`。
 * 合并前让对方看一眼。
 * 不提交密钥、隐私数据、无关文件。
 * 线上出问题优先修复，不在主分支上试错。

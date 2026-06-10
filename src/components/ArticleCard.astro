@@ -1,0 +1,31 @@
+---
+import type { Article } from "../lib/articles";
+import { formatDate, getArticleUrl } from "../lib/articles";
+
+interface Props {
+  article: Article;
+  headingLevel?: "h2" | "h3";
+}
+
+const { article, headingLevel = "h2" } = Astro.props;
+const Heading = headingLevel;
+const author = article.data.author;
+const authorLabel = author.anonymous ? author.name : author.name;
+const schoolMajor = [author.university, author.major].filter(Boolean).join(" / ");
+---
+
+<article class="article-card">
+  <div class="meta">
+    <span>{article.data.category}</span>
+    <span>更新于 {formatDate(article.data.updated)}</span>
+    <span>{authorLabel}</span>
+    {schoolMajor && <span>{schoolMajor}</span>}
+  </div>
+  <Heading>
+    <a href={getArticleUrl(article)}>{article.data.title}</a>
+  </Heading>
+  <p>{article.data.description}</p>
+  <div class="chips" aria-label="文章标签">
+    {article.data.tags.map((tag) => <span class="chip">{tag}</span>)}
+  </div>
+</article>

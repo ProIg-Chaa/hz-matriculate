@@ -229,6 +229,16 @@ h3 {
   padding: 18px;
 }
 
+a.card {
+  color: inherit;
+}
+
+a.card:hover {
+  text-decoration: none;
+  border-color: var(--accent);
+  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.06);
+}
+
 .card p {
   color: var(--muted);
   margin: 0;

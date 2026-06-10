@@ -41,10 +41,10 @@ const latestArticles = allArticles.slice(0, 4);
       <div class="grid">
         {
           categories.map((category) => (
-            <article class="card">
+            <a class="card" href={`/categories/${category.slug}/`}>
               <h3>{category.name}</h3>
               <p>{category.description}</p>
-            </article>
+            </a>
           ))
         }
       </div>

@@ -7,10 +7,56 @@ import BaseLayout from "../layouts/BaseLayout.astro";
     <div class="container">
       <p class="eyebrow">Search</p>
       <h1>搜索</h1>
-      <p class="lead">静态搜索将在后续接入 Pagefind。当前可以先通过文章列表浏览内容。</p>
-      <div class="actions">
-        <a class="button" href="/articles/">浏览全部文章</a>
-      </div>
+      <p class="lead">在全站文章中搜索关键词，包括标题、正文、标签和分类。</p>
     </div>
   </header>
+  <section class="section">
+    <div class="narrow">
+      <div id="search"></div>
+      <noscript>
+        <p class="notice">搜索需要启用 JavaScript。</p>
+      </noscript>
+    </div>
+  </section>
 </BaseLayout>
+
+<script is:inline>
+  async function initSearch() {
+    const container = document.getElementById("search");
+    if (!container) return;
+
+    try {
+      // PagefindUI 无法加载时（如开发环境），显示提示
+      const pagefindModule = await import("/pagefind/pagefind.js");
+      const { PagefindUI } = pagefindModule;
+
+      new PagefindUI({
+        element: "#search",
+        showSubResults: true,
+        autofocus: true,
+        showImages: false,
+        translations: {
+          placeholder: "输入关键词搜索...",
+          clear_search: "清空",
+          load_more: "加载更多",
+          search_label: "搜索全站",
+        },
+      });
+    } catch {
+      container.innerHTML = `
+        <div class="notice">
+          <p><strong>搜索暂不可用</strong></p>
+          <p>搜索功能在本地开发环境中不可用，请执行 <code>npm run build && npm run preview</code> 预览搜索效果。</p>
+          <p style="margin-top: 12px;"><a class="button secondary" href="/articles/">浏览全部文章</a></p>
+        </div>`;
+    }
+  }
+
+  initSearch();
+</script>
+
+<style>
+  #search {
+    min-height: 240px;
+  }
+</style>

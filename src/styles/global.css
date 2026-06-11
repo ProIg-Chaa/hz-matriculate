@@ -369,3 +369,46 @@ h3 {
     padding: 20px;
   }
 }
+
+/* Pagefind 搜索 UI */
+.pagefind-ui {
+  width: 100%;
+  --pagefind-ui-primary: var(--accent-dark);
+  --pagefind-ui-text: var(--text);
+  --pagefind-ui-background: var(--surface);
+  --pagefind-ui-border: var(--line);
+  --pagefind-ui-border-radius: var(--radius);
+  --pagefind-ui-font: inherit;
+}
+
+.pagefind-ui__search-input {
+  width: 100%;
+  padding: 12px 16px;
+  font-size: 1.05rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--text);
+}
+
+.pagefind-ui__search-input:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
+.pagefind-ui__result {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 16px;
+  margin-top: 10px;
+}
+
+.pagefind-ui__result-title {
+  font-weight: 700;
+}
+
+.pagefind-ui__result-excerpt {
+  color: var(--muted);
+}

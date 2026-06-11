@@ -1,23 +1,23 @@
 :root {
-  color-scheme: dark;
-  --bg: #0e171b;
-  --bg-soft: #101a1f;
-  --surface: #162328;
-  --surface-muted: #1d2d33;
-  --surface-elevated: rgba(22, 35, 40, 0.86);
-  --text: #f2f7f8;
-  --muted: #8fa4ad;
-  --muted-strong: #d8e3e7;
-  --line: rgba(216, 227, 231, 0.12);
-  --line-soft: rgba(216, 227, 231, 0.07);
-  --accent: #72c7d8;
-  --accent-dark: #b7edf3;
-  --accent-soft: rgba(114, 199, 216, 0.15);
-  --accent-warm: #d8b47a;
-  --warn-soft: rgba(216, 180, 122, 0.13);
-  --warn-text: #ead3a6;
-  --shadow-soft: 0 4px 12px rgba(0, 0, 0, 0.6);
-  --shadow-hover: 0 8px 24px rgba(0, 0, 0, 0.8);
+  color-scheme: light;
+  --bg: #f7f5ed;
+  --bg-soft: #efe9dc;
+  --surface: #fffefa;
+  --surface-muted: #f2eadc;
+  --surface-elevated: rgba(255, 254, 250, 0.88);
+  --text: #25231e;
+  --muted: #766f63;
+  --muted-strong: #4f493f;
+  --line: rgba(37, 35, 30, 0.12);
+  --line-soft: rgba(37, 35, 30, 0.075);
+  --accent: #9a6b3f;
+  --accent-dark: #6f4a2d;
+  --accent-soft: rgba(154, 107, 63, 0.13);
+  --accent-warm: #b88748;
+  --warn-soft: rgba(255, 244, 214, 0.78);
+  --warn-text: #6b4d00;
+  --shadow-soft: 0 14px 34px rgba(55, 43, 25, 0.08);
+  --shadow-hover: 0 18px 42px rgba(55, 43, 25, 0.13);
   --radius: 8px;
   --font-sans:
     Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
@@ -56,10 +56,10 @@ body::before {
   z-index: 0;
   pointer-events: none;
   background:
-    linear-gradient(135deg, rgba(14, 23, 27, 0.98), rgba(20, 36, 43, 0.9), rgba(11, 17, 21, 0.96)),
-    linear-gradient(115deg, rgba(114, 199, 216, 0.13), transparent 34%),
-    linear-gradient(245deg, rgba(216, 180, 122, 0.075), transparent 38%),
-    linear-gradient(180deg, rgba(216, 227, 231, 0.04), transparent 24%),
+    linear-gradient(135deg, rgba(255, 254, 250, 0.92), rgba(247, 245, 237, 0.96), rgba(239, 233, 220, 0.9)),
+    linear-gradient(115deg, rgba(184, 135, 72, 0.12), transparent 34%),
+    linear-gradient(245deg, rgba(245, 221, 169, 0.18), transparent 38%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.62), transparent 24%),
     var(--bg);
   background-size: 220% 220%;
   opacity: 0.88;
@@ -122,7 +122,7 @@ code {
   top: 0;
   z-index: 10;
   border-bottom: 1px solid var(--line-soft);
-  background: rgba(14, 23, 27, 0.82);
+  background: rgba(247, 245, 237, 0.86);
   backdrop-filter: blur(18px);
 }
 
@@ -166,7 +166,7 @@ code {
 .site-nav a:hover,
 .site-nav a[aria-current="page"] {
   color: var(--text);
-  background: rgba(114, 199, 216, 0.12);
+  background: rgba(154, 107, 63, 0.1);
   text-decoration: none;
 }
 
@@ -242,12 +242,12 @@ h3 {
 
 .hero-note,
 .notice {
-  border: 1px solid rgba(216, 180, 122, 0.22);
+  border: 1px solid rgba(184, 135, 72, 0.22);
   border-radius: var(--radius);
   background: var(--warn-soft);
   color: var(--warn-text);
   padding: 18px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.45);
+  box-shadow: 0 12px 26px rgba(107, 77, 0, 0.08);
 }
 
 .hero-note {
@@ -269,7 +269,7 @@ h3 {
   padding: 9px 17px;
   border: 1px solid var(--accent-dark);
   border-radius: 999px;
-  background: rgba(114, 199, 216, 0.16);
+  background: rgba(154, 107, 63, 0.12);
   color: var(--accent-dark);
   font-weight: 700;
 }
@@ -280,17 +280,17 @@ h3 {
 }
 
 .button:hover {
-  color: #ffffff;
-  background: rgba(114, 199, 216, 0.32);
+  color: #fffefa;
+  background: rgba(154, 107, 63, 0.9);
   border-color: var(--accent);
-  box-shadow: 0 0 10px rgba(114, 199, 216, 0.42);
+  box-shadow: 0 12px 24px rgba(154, 107, 63, 0.18);
   text-decoration: none;
   transform: translateY(-1px);
 }
 
 .button.secondary:hover {
-  color: #ffffff;
-  background: rgba(255, 255, 255, 0.055);
+  color: var(--accent-dark);
+  background: rgba(154, 107, 63, 0.12);
 }
 
 .section {
@@ -328,7 +328,7 @@ h3 {
   border: 1px solid var(--line-soft);
   border-radius: var(--radius);
   background: var(--surface-elevated);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.025);
+  box-shadow: 0 1px 0 rgba(37, 35, 30, 0.02);
   backdrop-filter: blur(14px);
 }
 
@@ -341,7 +341,7 @@ a.card {
 }
 
 a.card:hover {
-  border-color: rgba(114, 199, 216, 0.36);
+  border-color: rgba(154, 107, 63, 0.28);
   box-shadow: var(--shadow-soft);
   text-decoration: none;
   transform: translateY(-2px);
@@ -364,7 +364,7 @@ a.card:hover {
 }
 
 .article-card:hover {
-  border-color: rgba(114, 199, 216, 0.36);
+  border-color: rgba(154, 107, 63, 0.28);
   box-shadow: var(--shadow-hover);
   transform: translateY(-2px) scale(1.01);
 }
@@ -415,9 +415,9 @@ a.card:hover {
   align-items: center;
   min-height: 28px;
   padding: 3px 9px;
-  border: 1px solid rgba(114, 199, 216, 0.2);
+  border: 1px solid rgba(154, 107, 63, 0.16);
   border-radius: 999px;
-  background: rgba(114, 199, 216, 0.15);
+  background: rgba(154, 107, 63, 0.1);
   color: var(--accent-dark);
   font-size: 0.86rem;
 }
@@ -612,10 +612,10 @@ a.card:hover {
   padding: 13px 16px;
   border: 1px solid var(--line-soft);
   border-radius: var(--radius);
-  background: rgba(22, 35, 40, 0.92);
+  background: rgba(255, 254, 250, 0.92);
   color: var(--text);
   font-size: 1.02rem;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.025);
+  box-shadow: 0 1px 0 rgba(37, 35, 30, 0.02);
   transition:
     border-color 180ms ease,
     box-shadow 180ms ease,
@@ -624,9 +624,9 @@ a.card:hover {
 
 .pagefind-ui__search-input:focus {
   outline: none;
-  border-color: rgba(114, 199, 216, 0.55);
+  border-color: rgba(154, 107, 63, 0.42);
   background: var(--surface);
-  box-shadow: 0 0 0 4px rgba(114, 199, 216, 0.18);
+  box-shadow: 0 0 0 4px rgba(154, 107, 63, 0.12);
 }
 
 .pagefind-ui__result {
@@ -634,8 +634,8 @@ a.card:hover {
   padding: 18px;
   border: 1px solid var(--line-soft);
   border-radius: var(--radius);
-  background: rgba(22, 35, 40, 0.9);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.025);
+  background: rgba(255, 254, 250, 0.9);
+  box-shadow: 0 1px 0 rgba(37, 35, 30, 0.02);
 }
 
 .pagefind-ui__result-title {

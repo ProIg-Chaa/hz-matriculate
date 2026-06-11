@@ -1,0 +1,43 @@
+---
+import { getCollection } from "astro:content";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import ArticleCard from "../../components/ArticleCard.astro";
+import { sortArticlesByUpdatedDesc } from "../../lib/articles";
+import { categories, getCategoryBySlug } from "../../data/categories";
+
+export async function getStaticPaths() {
+  return categories.map((c) => ({
+    params: { category: c.slug },
+  }));
+}
+
+const { category } = Astro.params;
+const categoryData = getCategoryBySlug(category);
+
+const allArticles = sortArticlesByUpdatedDesc(await getCollection("articles"));
+const articles = allArticles.filter((a) => a.data.category === categoryData?.name);
+
+const title = categoryData ? categoryData.name : "未知分类";
+const description = categoryData
+  ? categoryData.description
+  : "该分类暂未收录任何文章。";
+---
+
+<BaseLayout title={title}>
+  <header class="page-header">
+    <div class="container">
+      <p class="eyebrow">Category</p>
+      <h1>{title}</h1>
+      <p class="lead">{description}</p>
+    </div>
+  </header>
+  <section class="section">
+    <div class="container article-list">
+      {
+        articles.length > 0
+          ? articles.map((article) => <ArticleCard article={article} />)
+          : <p class="notice">该分类下暂无文章，敬请期待。</p>
+      }
+    </div>
+  </section>
+</BaseLayout>

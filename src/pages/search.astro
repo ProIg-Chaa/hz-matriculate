@@ -1,9 +1,13 @@
 ---
 import { getCollection } from "astro:content";
 import BaseLayout from "../layouts/BaseLayout.astro";
+import { getArticleSlug } from "../lib/articles";
 
 const allArticles = await getCollection("articles");
 const allTags = [...new Set(allArticles.flatMap((a) => a.data.tags))].sort();
+const articleTagsByPath = Object.fromEntries(
+  allArticles.map((article) => [`/articles/${getArticleSlug(article)}/`, article.data.tags])
+);
 ---
 
 <BaseLayout title="搜索">
@@ -19,15 +23,25 @@ const allTags = [...new Set(allArticles.flatMap((a) => a.data.tags))].sort();
       {
         allTags.length > 0 && (
           <div class="tag-filter" aria-label="按标签筛选">
-            <span class="tag-filter-label">按标签筛选：</span>
-            <div class="tag-filter-chips">
-              {allTags.map((tag) => <button class="chip tag-filter-chip" type="button" data-tag={tag}>{tag}</button>)}
+            <div class="tag-filter-head">
+              <span class="tag-filter-label">按标签筛选：</span>
+              <button class="tag-filter-clear" type="button" hidden>清空</button>
+            </div>
+            <div>
+              <div class="tag-filter-chips">
+                {allTags.map((tag) => (
+                  <button class="chip tag-filter-chip" type="button" data-tag={tag} aria-pressed="false">
+                    {tag}
+                  </button>
+                ))}
+              </div>
+              <p class="tag-filter-status" aria-live="polite"></p>
             </div>
           </div>
         )
       }
       <div id="search"></div>
-      <div id="tag-results" class="article-list" hidden></div>
+      <div id="tag-results" class="article-list" data-article-tags={JSON.stringify(articleTagsByPath)} hidden></div>
       <noscript>
         <p class="notice">搜索需要启用 JavaScript。</p>
       </noscript>
@@ -72,7 +86,7 @@ const allTags = [...new Set(allArticles.flatMap((a) => a.data.tags))].sort();
         throw new Error("PagefindUI is not available.");
       }
 
-      const pagefindUI = new PagefindUI({
+      new PagefindUI({
         element: "#search",
         showSubResults: true,
         autofocus: true,
@@ -85,7 +99,7 @@ const allTags = [...new Set(allArticles.flatMap((a) => a.data.tags))].sort();
         },
       });
 
-      initTagFilter(pagefindUI);
+      initTagFilter();
     } catch {
       container.innerHTML = `
         <div class="notice">
@@ -96,61 +110,123 @@ const allTags = [...new Set(allArticles.flatMap((a) => a.data.tags))].sort();
     }
   }
 
-  function initTagFilter(pagefindUI) {
+  function initTagFilter() {
     const chips = document.querySelectorAll(".tag-filter-chip");
     const searchContainer = document.getElementById("search");
     const tagResults = document.getElementById("tag-results");
-    let activeTag = null;
+    const clearButton = document.querySelector(".tag-filter-clear");
+    const status = document.querySelector(".tag-filter-status");
+    const articleTagsByPath = JSON.parse(tagResults?.dataset.articleTags || "{}");
+    const selectedTags = new Set();
     let pagefindInstance = null;
 
     async function getPagefind() {
       if (pagefindInstance) return pagefindInstance;
-      await loadScript("/pagefind/pagefind.js");
-      pagefindInstance = window.Pagefind;
+      pagefindInstance = await import("/pagefind/pagefind.js");
+      if (typeof pagefindInstance.init === "function") {
+        await pagefindInstance.init();
+      }
       return pagefindInstance;
     }
 
-    function buildResultHTML(result, tag) {
+    function escapeHTML(value) {
+      return String(value)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+    function normalizePath(url) {
+      try {
+        const path = new URL(url, window.location.origin).pathname;
+        return path.endsWith("/") ? path : `${path}/`;
+      } catch {
+        return url;
+      }
+    }
+
+    function getArticleTags(result) {
+      const path = normalizePath(result.url || result.raw_url || "");
+      return articleTagsByPath[path] || [];
+    }
+
+    function buildTagsHTML(tags) {
+      if (tags.length === 0) return "";
+
+      return `
+        <div class="chips" aria-label="文章真实标签">
+          ${tags.map((tag) => `<span class="chip">${escapeHTML(tag)}</span>`).join("")}
+        </div>`;
+    }
+
+    function buildResultHTML(result) {
       const url = result.url || result.raw_url || "#";
       const title = result.meta?.title || "无标题";
       const excerpt = result.excerpt || "";
+      const articleTags = getArticleTags(result);
 
       return `
         <article class="article-card">
           <div>
-            <h3><a href="${url}">${title}</a></h3>
+            <h3><a href="${escapeHTML(url)}">${escapeHTML(title)}</a></h3>
             <p>${excerpt}</p>
           </div>
-          <div class="meta">
-            <span class="category-pill">${tag}</span>
-          </div>
+          ${buildTagsHTML(articleTags)}
         </article>`;
     }
 
-    async function searchByTag(tag) {
-      tagResults.innerHTML = `<p style="color: var(--muted); text-align: center; padding: 24px 0;">正在筛选「${tag}」相关文章...</p>`;
+    async function searchByTags() {
+      const tags = [...selectedTags];
+      const selectedLabel = tags.join("、");
+
+      if (tags.length === 0) {
+        clearFilter();
+        return;
+      }
+
+      tagResults.innerHTML = `<p class="tag-filter-loading">正在筛选「${escapeHTML(selectedLabel)}」相关文章...</p>`;
       tagResults.hidden = false;
+      searchContainer.hidden = true;
 
       try {
         const pf = await getPagefind();
-        const search = await pf.search("", { filters: { tag } });
+        const search = await pf.search(null, { filters: { tag: { all: tags } } });
         const results = await Promise.all(search.results.map((r) => r.data()));
 
         if (results.length === 0) {
-          tagResults.innerHTML = `<div class="notice"><p>没有找到标签为「${tag}」的文章。</p><p style="margin-top: 8px;">该标签可能存在于草稿或未发布文章中。</p></div>`;
+          tagResults.innerHTML = `<div class="notice"><p>没有找到同时匹配当前标签选择的文章。</p><p style="margin-top: 8px;">可以少选几个标签，或直接使用关键词搜索。</p></div>`;
           return;
         }
 
-        tagResults.innerHTML = results.map((r) => buildResultHTML(r, tag)).join("");
+        tagResults.innerHTML = results.map((r) => buildResultHTML(r)).join("");
       } catch (err) {
         console.error("Tag filter search failed:", err);
         tagResults.innerHTML = `<div class="notice"><p>筛选搜索失败，请稍后重试。</p></div>`;
       }
     }
 
+    function updateFilterState() {
+      const count = selectedTags.size;
+      chips.forEach((chip) => {
+        const isActive = selectedTags.has(chip.dataset.tag);
+        chip.classList.toggle("active", isActive);
+        chip.setAttribute("aria-pressed", String(isActive));
+      });
+
+      if (clearButton) {
+        clearButton.hidden = count === 0;
+      }
+
+      if (status) {
+        status.textContent = count > 0 ? `已选择 ${count} 个标签。再次点击标签可取消选择。` : "";
+      }
+    }
+
     function clearFilter() {
-      activeTag = null;
-      chips.forEach((c) => c.classList.remove("active"));
+      selectedTags.clear();
+      updateFilterState();
       tagResults.innerHTML = "";
       tagResults.hidden = true;
       searchContainer.hidden = false;
@@ -160,20 +236,18 @@ const allTags = [...new Set(allArticles.flatMap((a) => a.data.tags))].sort();
       chip.addEventListener("click", async () => {
         const tag = chip.dataset.tag;
 
-        if (activeTag === tag) {
-          clearFilter();
-          return;
+        if (selectedTags.has(tag)) {
+          selectedTags.delete(tag);
+        } else {
+          selectedTags.add(tag);
         }
 
-        activeTag = tag;
-        chips.forEach((c) => c.classList.remove("active"));
-        chip.classList.add("active");
-        searchContainer.hidden = true;
-        tagResults.hidden = false;
-
-        await searchByTag(tag);
+        updateFilterState();
+        await searchByTags();
       });
     });
+
+    clearButton?.addEventListener("click", clearFilter);
   }
 
   initSearch();
@@ -185,18 +259,42 @@ const allTags = [...new Set(allArticles.flatMap((a) => a.data.tags))].sort();
   }
 
   .tag-filter {
-    display: flex;
-    align-items: flex-start;
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
     gap: 10px;
     margin-bottom: 24px;
-    flex-wrap: wrap;
+  }
+
+  .tag-filter-head {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding-top: 4px;
+  }
+
+  .tag-filter-label,
+  .tag-filter-status {
+    color: var(--muted);
+    font-size: 0.94rem;
   }
 
   .tag-filter-label {
-    color: var(--muted);
-    font-size: 0.94rem;
-    padding-top: 4px;
     white-space: nowrap;
+  }
+
+  .tag-filter-clear {
+    border: 0;
+    background: transparent;
+    color: var(--accent-dark);
+    cursor: pointer;
+    font: inherit;
+    font-size: 0.88rem;
+    padding: 0;
+  }
+
+  .tag-filter-clear:hover {
+    color: var(--accent);
+    text-decoration: underline;
   }
 
   .tag-filter-chips {
@@ -232,7 +330,29 @@ const allTags = [...new Set(allArticles.flatMap((a) => a.data.tags))].sort();
     color: #fffefa;
   }
 
+  .tag-filter-status,
+  .tag-filter-loading {
+    margin: 10px 0 0;
+  }
+
+  .tag-filter-loading {
+    color: var(--muted);
+    text-align: center;
+    padding: 24px 0;
+  }
+
   #tag-results {
     margin-top: 18px;
+  }
+
+  @media (max-width: 700px) {
+    .tag-filter {
+      grid-template-columns: 1fr;
+    }
+
+    .tag-filter-head {
+      justify-content: space-between;
+      padding-top: 0;
+    }
   }
 </style>

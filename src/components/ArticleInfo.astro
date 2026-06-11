@@ -1,0 +1,26 @@
+---
+import { getSchoolMajor, getAuthorLabel } from "../lib/articles";
+import type { CollectionEntry } from "astro:content";
+
+interface Props {
+  author: CollectionEntry<"articles">["data"]["author"];
+  audience: string[];
+}
+
+const { author, audience } = Astro.props;
+const schoolMajor = getSchoolMajor(author);
+const authorLabel = getAuthorLabel(author);
+const audienceLabel =
+  audience.length > 0 ? audience.join("、") : "高中生和校友";
+---
+
+<section class="info-panel" aria-label="文章信息">
+  <div class="info-item">
+    <strong>作者信息</strong>
+    <span>{schoolMajor || author.graduationYear || authorLabel}</span>
+  </div>
+  <div class="info-item">
+    <strong>适合读者</strong>
+    <span>{audienceLabel}</span>
+  </div>
+</section>

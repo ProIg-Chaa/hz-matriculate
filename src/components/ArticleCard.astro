@@ -16,7 +16,7 @@ const schoolMajor = getSchoolMajor(author);
 
 <article class="article-card">
   <div class="meta">
-    <span>{article.data.category}</span>
+    <span class="category-pill">{article.data.category}</span>
     <span>更新于 {formatDate(article.data.updated)}</span>
     <span>{authorLabel}</span>
     {schoolMajor && <span>{schoolMajor}</span>}

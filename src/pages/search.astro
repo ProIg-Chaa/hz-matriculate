@@ -21,14 +21,42 @@ import BaseLayout from "../layouts/BaseLayout.astro";
 </BaseLayout>
 
 <script is:inline>
+  function loadScript(src) {
+    return new Promise((resolve, reject) => {
+      const existingScript = document.querySelector(`script[src="${src}"]`);
+      if (existingScript) {
+        resolve();
+        return;
+      }
+
+      const script = document.createElement("script");
+      script.src = src;
+      script.onload = resolve;
+      script.onerror = reject;
+      document.head.append(script);
+    });
+  }
+
   async function initSearch() {
     const container = document.getElementById("search");
     if (!container) return;
 
     try {
       // PagefindUI 无法加载时（如开发环境），显示提示
-      const pagefindModule = await import("/pagefind/pagefind.js");
-      const { PagefindUI } = pagefindModule;
+      const existingStylesheet = document.querySelector("link[href='/pagefind/pagefind-ui.css']");
+      if (!existingStylesheet) {
+        const stylesheet = document.createElement("link");
+        stylesheet.rel = "stylesheet";
+        stylesheet.href = "/pagefind/pagefind-ui.css";
+        document.head.append(stylesheet);
+      }
+
+      await loadScript("/pagefind/pagefind-ui.js");
+      const { PagefindUI } = window;
+
+      if (!PagefindUI) {
+        throw new Error("PagefindUI is not available.");
+      }
 
       new PagefindUI({
         element: "#search",

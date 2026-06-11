@@ -1,5 +1,9 @@
 ---
+import { getCollection } from "astro:content";
 import BaseLayout from "../layouts/BaseLayout.astro";
+
+const allArticles = await getCollection("articles");
+const allTags = [...new Set(allArticles.flatMap((a) => a.data.tags))].sort();
 ---
 
 <BaseLayout title="搜索">
@@ -12,7 +16,18 @@ import BaseLayout from "../layouts/BaseLayout.astro";
   </header>
   <section class="section">
     <div class="narrow">
+      {
+        allTags.length > 0 && (
+          <div class="tag-filter" aria-label="按标签筛选">
+            <span class="tag-filter-label">按标签筛选：</span>
+            <div class="tag-filter-chips">
+              {allTags.map((tag) => <button class="chip tag-filter-chip" type="button" data-tag={tag}>{tag}</button>)}
+            </div>
+          </div>
+        )
+      }
       <div id="search"></div>
+      <div id="tag-results" class="article-list" hidden></div>
       <noscript>
         <p class="notice">搜索需要启用 JavaScript。</p>
       </noscript>
@@ -42,7 +57,6 @@ import BaseLayout from "../layouts/BaseLayout.astro";
     if (!container) return;
 
     try {
-      // PagefindUI 无法加载时（如开发环境），显示提示
       const existingStylesheet = document.querySelector("link[href='/pagefind/pagefind-ui.css']");
       if (!existingStylesheet) {
         const stylesheet = document.createElement("link");
@@ -58,7 +72,7 @@ import BaseLayout from "../layouts/BaseLayout.astro";
         throw new Error("PagefindUI is not available.");
       }
 
-      new PagefindUI({
+      const pagefindUI = new PagefindUI({
         element: "#search",
         showSubResults: true,
         autofocus: true,
@@ -70,6 +84,8 @@ import BaseLayout from "../layouts/BaseLayout.astro";
           search_label: "搜索全站",
         },
       });
+
+      initTagFilter(pagefindUI);
     } catch {
       container.innerHTML = `
         <div class="notice">
@@ -80,11 +96,143 @@ import BaseLayout from "../layouts/BaseLayout.astro";
     }
   }
 
+  function initTagFilter(pagefindUI) {
+    const chips = document.querySelectorAll(".tag-filter-chip");
+    const searchContainer = document.getElementById("search");
+    const tagResults = document.getElementById("tag-results");
+    let activeTag = null;
+    let pagefindInstance = null;
+
+    async function getPagefind() {
+      if (pagefindInstance) return pagefindInstance;
+      await loadScript("/pagefind/pagefind.js");
+      pagefindInstance = window.Pagefind;
+      return pagefindInstance;
+    }
+
+    function buildResultHTML(result, tag) {
+      const url = result.url || result.raw_url || "#";
+      const title = result.meta?.title || "无标题";
+      const excerpt = result.excerpt || "";
+
+      return `
+        <article class="article-card">
+          <div>
+            <h3><a href="${url}">${title}</a></h3>
+            <p>${excerpt}</p>
+          </div>
+          <div class="meta">
+            <span class="category-pill">${tag}</span>
+          </div>
+        </article>`;
+    }
+
+    async function searchByTag(tag) {
+      tagResults.innerHTML = `<p style="color: var(--muted); text-align: center; padding: 24px 0;">正在筛选「${tag}」相关文章...</p>`;
+      tagResults.hidden = false;
+
+      try {
+        const pf = await getPagefind();
+        const search = await pf.search("", { filters: { tag } });
+        const results = await Promise.all(search.results.map((r) => r.data()));
+
+        if (results.length === 0) {
+          tagResults.innerHTML = `<div class="notice"><p>没有找到标签为「${tag}」的文章。</p><p style="margin-top: 8px;">该标签可能存在于草稿或未发布文章中。</p></div>`;
+          return;
+        }
+
+        tagResults.innerHTML = results.map((r) => buildResultHTML(r, tag)).join("");
+      } catch (err) {
+        console.error("Tag filter search failed:", err);
+        tagResults.innerHTML = `<div class="notice"><p>筛选搜索失败，请稍后重试。</p></div>`;
+      }
+    }
+
+    function clearFilter() {
+      activeTag = null;
+      chips.forEach((c) => c.classList.remove("active"));
+      tagResults.innerHTML = "";
+      tagResults.hidden = true;
+      searchContainer.hidden = false;
+    }
+
+    chips.forEach((chip) => {
+      chip.addEventListener("click", async () => {
+        const tag = chip.dataset.tag;
+
+        if (activeTag === tag) {
+          clearFilter();
+          return;
+        }
+
+        activeTag = tag;
+        chips.forEach((c) => c.classList.remove("active"));
+        chip.classList.add("active");
+        searchContainer.hidden = true;
+        tagResults.hidden = false;
+
+        await searchByTag(tag);
+      });
+    });
+  }
+
   initSearch();
 </script>
 
 <style>
   #search {
     min-height: 240px;
+  }
+
+  .tag-filter {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+  }
+
+  .tag-filter-label {
+    color: var(--muted);
+    font-size: 0.94rem;
+    padding-top: 4px;
+    white-space: nowrap;
+  }
+
+  .tag-filter-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .tag-filter-chip {
+    cursor: pointer;
+    user-select: none;
+    transition:
+      background-color 180ms ease,
+      border-color 180ms ease,
+      color 180ms ease,
+      box-shadow 180ms ease;
+  }
+
+  .tag-filter-chip:hover {
+    border-color: var(--accent);
+    background: rgba(154, 107, 63, 0.2);
+  }
+
+  .tag-filter-chip.active {
+    background: var(--accent-dark);
+    border-color: var(--accent-dark);
+    color: #fffefa;
+  }
+
+  .tag-filter-chip.active:hover {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #fffefa;
+  }
+
+  #tag-results {
+    margin-top: 18px;
   }
 </style>

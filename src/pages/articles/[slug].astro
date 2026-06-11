@@ -17,7 +17,7 @@ const { Content } = await render(article);
 const author = article.data.author;
 ---
 
-<BaseLayout title={article.data.title} description={article.data.description}>
+<BaseLayout title={article.data.title} description={article.data.description} ogType="article">
   <article>
     <header class="article-header">
       <div class="narrow">

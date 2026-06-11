@@ -29,6 +29,15 @@ main
 
 禁止直接在 `main` 分支上开发，除非是极小的紧急修复，并且需要提前说明。
 
+正式实现前必须先确认当前分支：
+
+```bash
+git status --short --branch
+git branch --show-current
+```
+
+如果当前仍在 `main`，先从最新 `main` 创建任务分支，再进行任何文件编辑。
+
 ---
 
 ### 2.2 开发分支命名
@@ -131,6 +140,14 @@ git pull origin main
 
 ```bash
 git checkout -b feature/homepage-layout
+```
+
+这是标准开工动作。除非明确说明是紧急直改，否则实现类任务不得跳过创建分支。
+
+如果已经误在 `main` 上产生了未提交改动，不要提交到 `main`，应立即把当前工作区切到新分支：
+
+```bash
+git checkout -b feature/当前任务名
 ```
 
 开发过程中可以正常提交：
@@ -516,7 +533,7 @@ PUBLIC_FORM_URL=
 两人项目最重要的是保持以下纪律：
 
 * 开发前先 `git pull`。
-* 不直接改 `main`。
+* 不直接改 `main`，实现前必须先确认当前分支。
 * 一个任务一个分支。
 * 一个 PR 只解决一个问题。
 * 每一次正式提交都必须添加或更新 `devlog`。

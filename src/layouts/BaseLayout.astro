@@ -1,12 +1,12 @@
 ---
 const {
-  title = import.meta.env.PUBLIC_SITE_NAME || "高中校友升学经验库",
+  title = import.meta.env.PUBLIC_SITE_NAME || "霁湖行舟",
   description = import.meta.env.PUBLIC_SITE_DESCRIPTION ||
     "沉淀校友升学、专业与大学生活经验的静态资料库。",
   ogType = "website"
 } = Astro.props;
 
-const siteName = import.meta.env.PUBLIC_SITE_NAME || "高中校友升学经验库";
+const siteName = import.meta.env.PUBLIC_SITE_NAME || "霁湖行舟";
 const pageUrl = Astro.url.href;
 const pageTitle = title === siteName ? siteName : `${title} | ${siteName}`;
 const navItems = [

@@ -1,0 +1,36 @@
+---
+import { getCollection } from "astro:content";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import QuestionCard from "../../components/QuestionCard.astro";
+import { getAnswersForQuestion, sortQuestionsByUpdatedDesc } from "../../lib/questions";
+
+const questions = sortQuestionsByUpdatedDesc(await getCollection("questions"));
+const articles = await getCollection("articles");
+---
+
+<BaseLayout title="问答">
+  <header class="page-header">
+    <div class="container">
+      <p class="eyebrow">Questions</p>
+      <h1>提问与回答</h1>
+      <p class="lead">
+        收集高中生和应届生真正关心的问题，并把校友回答整理在同一个问题页面下。没有答案的问题会保持征集中，等待更多校友补充。
+      </p>
+    </div>
+  </header>
+  <section class="section">
+    <div class="container article-list">
+      {
+        questions.length > 0
+          ? questions.map((question) => (
+              <QuestionCard
+                question={question}
+                answerCount={getAnswersForQuestion(question, articles).length}
+              />
+            ))
+          : <p class="notice">暂无问题，欢迎先从投稿入口提供你想问的内容。</p>
+      }
+    </div>
+  </section>
+</BaseLayout>
+

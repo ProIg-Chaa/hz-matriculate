@@ -25,6 +25,11 @@ export const categories = [
     description: "转专业、保研、考研、就业和实习等后续路径。"
   },
   {
+    slug: "question-answers",
+    name: "问题回答",
+    description: "围绕高中生和应届生真实问题整理的回答与补充。"
+  },
+  {
     slug: "announcements",
     name: "项目公告",
     description: "项目更新、维护说明和重要提醒。"

@@ -66,6 +66,28 @@ const articleTagsByPath = Object.fromEntries(
     });
   }
 
+  function applyInitialQuery() {
+    const params = new URLSearchParams(window.location.search);
+    const q = params.get("q")?.trim();
+    if (!q) return;
+
+    const input = document.querySelector(".pagefind-ui__search-input");
+    if (!input) {
+      // PagefindUI may not have rendered its input yet — retry once
+      setTimeout(() => {
+        const retryInput = document.querySelector(".pagefind-ui__search-input");
+        if (retryInput) {
+          retryInput.value = q;
+          retryInput.dispatchEvent(new Event("input", { bubbles: true }));
+        }
+      }, 300);
+      return;
+    }
+
+    input.value = q;
+    input.dispatchEvent(new Event("input", { bubbles: true }));
+  }
+
   async function initSearch() {
     const container = document.getElementById("search");
     if (!container) return;
@@ -86,7 +108,7 @@ const articleTagsByPath = Object.fromEntries(
         throw new Error("PagefindUI is not available.");
       }
 
-      new PagefindUI({
+      const pfUI = new PagefindUI({
         element: "#search",
         showSubResults: true,
         autofocus: true,
@@ -100,6 +122,7 @@ const articleTagsByPath = Object.fromEntries(
       });
 
       initTagFilter();
+      applyInitialQuery();
     } catch {
       container.innerHTML = `
         <div class="notice">

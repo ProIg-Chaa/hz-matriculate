@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "astro dev",
     "build": "astro build && pagefind --site dist",
-    "preview": "astro preview"
+    "preview": "astro preview",
+    "format:articles": "node scripts/format-articles.mjs"
   },
   "dependencies": {
     "@astrojs/sitemap": "^3.7.3",

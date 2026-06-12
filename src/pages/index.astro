@@ -2,30 +2,46 @@
 import { getCollection } from "astro:content";
 import BaseLayout from "../layouts/BaseLayout.astro";
 import ArticleCard from "../components/ArticleCard.astro";
+import QuestionCard from "../components/QuestionCard.astro";
 import { categories } from "../data/categories";
 import { sortArticlesByUpdatedDesc } from "../lib/articles";
+import { getAnswersForQuestion, sortQuestionsByUpdatedDesc } from "../lib/questions";
 
 const allArticles = sortArticlesByUpdatedDesc(await getCollection("articles"));
+const allQuestions = sortQuestionsByUpdatedDesc(await getCollection("questions"));
 const featuredArticles = allArticles.filter((article) => article.data.display.featured).slice(0, 3);
 const latestArticles = allArticles.slice(0, 4);
+const highlightedQuestions = allQuestions.slice(0, 2);
+const articleCount = allArticles.length;
+const questionCount = allQuestions.length;
 ---
 
 <BaseLayout>
   <section class="hero">
     <div class="container hero-grid">
       <div>
-        <p class="eyebrow">校友经验 · 大学生活 · 信息差桥梁</p>
-        <h1>把大学里的真实生活，带回高中生看得见的地方。</h1>
+        <p class="eyebrow">河源中学 · 校友经验 · 信息差桥梁</p>
+        <h1>给河中后来的你，一些已经走过的人说的真话。</h1>
         <p class="lead">
-          霁湖行舟不只整理志愿填报经验，也收集专业学习、校园日常、衣食住行、城市体验和成长选择。分享不必写成长篇论文，一段具体经历、一个避坑提醒、一份生活观察，都能帮后来的人少一点陌生。
+          霁湖行舟面向河源中学的学弟学妹和毕业校友，收集志愿填报、专业学习、校园日常、衣食住行、城市体验与成长选择。长文、短答、避坑提醒都可以成为后来者做选择前的一点光。
         </p>
         <div class="actions">
-          <a class="button" href="/articles/">浏览文章</a>
+          <a class="button" href="/questions/">看问答</a>
+          <a class="button secondary" href="/search/">搜索内容</a>
+          <a class="button secondary" href="/articles/">浏览文章</a>
           <a class="button secondary" href="/submit/">我要投稿</a>
         </div>
       </div>
-      <aside class="hero-note">
-        本站内容来自校友个人经历，适合用来理解真实处境和补足信息差。涉及招生政策、专业组、选科要求和录取位次，请以官方信息为准。
+      <aside class="hero-note school-note">
+        <p class="school-mark">HYZX · 河源中学</p>
+        <h2>从河中出发，再把经验带回来。</h2>
+        <p>
+          这里不是学校官方平台，而是一份由校友慢慢补齐的同行笔记。它服务于正在提问的人，也服务于愿意回答的人。
+        </p>
+        <div class="home-stats" aria-label="站点内容概览">
+          <span>{articleCount} 篇文章</span>
+          <span>{questionCount} 个问题</span>
+        </div>
       </aside>
     </div>
   </section>
@@ -34,8 +50,33 @@ const latestArticles = allArticles.slice(0, 4);
     <div class="container">
       <div class="section-heading">
         <div>
+          <h2>先从一个问题开始</h2>
+          <p>高中生的疑问会被整理成问题页，校友回答会聚合在同一个页面下。</p>
+        </div>
+        <a href="/questions/">查看全部</a>
+      </div>
+      <div class="article-list">
+        {
+          highlightedQuestions.length > 0
+            ? highlightedQuestions.map((question) => (
+                <QuestionCard
+                  question={question}
+                  answerCount={getAnswersForQuestion(question, allArticles).length}
+                  headingLevel="h3"
+                />
+              ))
+            : <p class="notice">暂未收录问题。</p>
+        }
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      <div class="section-heading">
+        <div>
           <h2>主要分类</h2>
-          <p>先用稳定分类承接升学、专业和生活内容，后续通过标签和搜索扩展更细的发现路径。</p>
+          <p>从河中出发后的选择很多，先用稳定分类承接升学、专业、生活与问答内容。</p>
         </div>
       </div>
       <div class="grid">

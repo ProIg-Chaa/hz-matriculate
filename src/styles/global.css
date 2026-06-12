@@ -296,6 +296,51 @@ h3 {
   font-size: 0.96rem;
 }
 
+.school-note {
+  align-self: stretch;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 18px;
+}
+
+.school-note h2 {
+  margin: 0;
+  color: var(--text);
+  font-size: 1.45rem;
+}
+
+.school-note p {
+  margin: 0;
+}
+
+.school-mark {
+  width: fit-content;
+  border: 1px solid rgba(154, 107, 63, 0.22);
+  border-radius: 999px;
+  background: rgba(255, 254, 250, 0.58);
+  padding: 5px 10px;
+  color: var(--accent-dark);
+  font-size: 0.82rem;
+  font-weight: 800;
+}
+
+.home-stats {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.home-stats span {
+  border: 1px solid rgba(154, 107, 63, 0.16);
+  border-radius: var(--radius);
+  background: rgba(255, 254, 250, 0.52);
+  padding: 10px 12px;
+  color: var(--accent-dark);
+  font-weight: 800;
+  text-align: center;
+}
+
 .actions {
   display: flex;
   gap: 12px;

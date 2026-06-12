@@ -63,13 +63,29 @@ PUBLIC_SUBMISSION_FORM_URL=
 
 ## 内容维护
 
-文章位于：
+文章维护分为三层：
 
 ```text
-src/content/articles/
+article/source/        原始投稿
+article/formatted/     自动格式化后的待审核稿
+src/content/articles/  审核后正式发布到网站的文章
 ```
 
-每篇文章使用 Markdown 编写，并通过 `src/content.config.ts` 中的 schema 校验。当前 Article frontmatter 包含：
+原始投稿可以先放入 `article/source/`，然后运行：
+
+```bash
+npm run format:articles
+```
+
+脚本会批量读取原稿，生成符合 Article schema 的 Markdown 到 `article/formatted/`。默认不会覆盖已有格式化稿；如需重新生成，可运行：
+
+```bash
+npm run format:articles -- --force
+```
+
+格式化脚本只做结构化和轻量排版，不改写作者语气，也不会直接写入 `src/content/articles/`。formatted 文件仍需人工审核标题、分类、标签和隐私信息后，再移动或复制到正式发布目录。
+
+正式发布文章使用 Markdown 编写，并通过 `src/content.config.ts` 中的 schema 校验。当前 Article frontmatter 包含：
 
 ```text
 title
@@ -129,4 +145,3 @@ CONTRIBUTING.md
 - 复杂多维筛选面板
 
 这些能力如有需要，应在后续迭代中单独设计、评估和接入。
-

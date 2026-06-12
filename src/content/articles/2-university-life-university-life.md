@@ -13,7 +13,7 @@ tags:
   - "北京师范大学（珠海）"
 author:
   name: "麟后"
-  anonymous: true
+  anonymous: false
   contactVisible: false
 audience:
   - "希望了解真实经验的高中生"

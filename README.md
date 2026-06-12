@@ -1,20 +1,51 @@
 # 霁湖行舟
 
-一个面向高中生、校友和维护者的静态经验资料库，用于沉淀高考备考、志愿填报、专业体验、大学生活与发展路径相关内容。
+霁湖行舟是一个面向高中生与毕业校友的公益性经验分享站，旨在把大学与高中之间常常难以被看见的信息差，整理成可以持续检索、阅读和维护的公开资料。
 
-第一版采用 Astro + Markdown，优先保证内容结构清楚、部署简单、后续容易扩展。
+项目关注的不只是志愿填报，也包括专业学习、校园日常、衣食住行、城市体验、成长选择与后续发展路径。我们希望每一位后来者在做选择之前，都能多看见一些真实处境：不必只依赖招生简章、平台宣传或零散传闻，也不必把每一次分享都写成严肃长文。
+
+## 项目定位
+
+- **真实经验沉淀**：收集校友基于个人经历写下的观察、复盘、提醒与建议。
+- **信息差补足**：帮助高中生理解大学里的专业、城市、生活成本、学习方式与发展路径。
+- **轻量内容维护**：使用 Markdown 管理内容，优先保证结构清晰、部署简单、后续可扩展。
+- **公益与非官方**：本站为校友自发维护项目，并非学校官方平台；涉及招生政策与录取信息时，请以官方发布为准。
+
+## 技术栈
+
+当前版本采用稳定、轻量的静态站方案：
+
+- [Astro](https://astro.build/)：页面生成与路由组织
+- Markdown Content Collections：文章内容建模与 frontmatter 校验
+- Pagefind：静态搜索与标签筛选
+- GitHub Pages：静态部署
+- 原生 CSS：全站视觉系统与响应式布局
+
+项目暂不引入数据库、登录系统、评论系统、在线后台或复杂推荐逻辑，以保持主干稳定。
 
 ## 本地开发
 
+安装依赖：
+
 ```bash
 npm install
+```
+
+启动开发环境：
+
+```bash
 npm run dev
 ```
 
-常用命令：
+构建静态站点并生成搜索索引：
 
 ```bash
 npm run build
+```
+
+预览构建结果：
+
+```bash
 npm run preview
 ```
 
@@ -28,16 +59,101 @@ PUBLIC_SITE_DESCRIPTION=
 PUBLIC_SUBMISSION_FORM_URL=
 ```
 
-投稿表单链接暂未确定时，可以留空。页面会显示占位提示。
+投稿表单链接尚未确定时可以留空，页面会显示占位提示。
 
 ## 内容维护
 
-文章放在 `src/content/articles/`，使用 Markdown 或 MDX。
+文章维护分为三层：
 
-每篇文章通过 `src/content.config.ts` 中的 schema 校验，必须包含标题、摘要、日期、分类、标签、作者展示信息、审核状态和展示控制字段。
+```text
+article/source/        原始投稿
+article/formatted/     自动格式化后的待审核稿
+src/content/articles/  审核后正式发布到网站的文章
+```
 
-示例文章仅用于验证结构和页面效果，后续可以替换为真实校友内容。
+原始投稿可以先放入 `article/source/`，然后运行：
+
+```bash
+npm run format:articles
+```
+
+脚本会批量读取原稿，生成符合 Article schema 的 Markdown 到 `article/formatted/`。默认不会覆盖已有格式化稿；如需重新生成，可运行：
+
+```bash
+npm run format:articles -- --force
+```
+
+格式化脚本只做结构化和轻量排版，不改写作者语气，也不会直接写入 `src/content/articles/`。formatted 文件仍需人工审核标题、分类、标签和隐私信息后，再移动或复制到正式发布目录。
+
+问题与回答内容分为两类维护：
+
+```text
+src/content/questions/  高中生和应届生提出的问题
+src/content/articles/   围绕问题整理出的回答文章
+```
+
+问题回答仍然是文章的一种，`category` 使用 `问题回答`，并通过 `question` 字段关联到对应问题 slug。问题页面会根据关联回答数量自动显示“已回答”或“征集中”。
+
+正式发布文章使用 Markdown 编写，并通过 `src/content.config.ts` 中的 schema 校验。当前 Article frontmatter 包含：
+
+```text
+title
+description
+date
+updated
+category
+tags
+question
+author
+audience
+review
+display
+```
+
+示例文章仅用于验证结构、列表、详情页、搜索与标签筛选效果，后续可替换为真实校友投稿。
+
+## 路由概览
+
+```text
+/                      首页
+/articles/             文章列表
+/articles/[slug]/      文章详情
+/questions/            问题列表
+/questions/[slug]/     问题详情与关联回答
+/categories/[category]/ 分类页
+/search/               搜索与标签筛选
+/submit/               投稿说明
+/about/                关于项目
+/disclaimer/           免责声明
+/404/                  未找到页面
+```
+
+## 协作约定
+
+项目协作规则见：
+
+```text
+CONTRIBUTING.md
+```
+
+核心约定：
+
+- `main` 分支保持可部署状态。
+- 常规功能、样式、内容修改通过独立分支和 Pull Request 合并。
+- 每一次正式提交必须同步添加或更新 `devlog/` 下的 Markdown 记录。
+- 不提交 `.env`、密钥、账号密码、私人联系方式或未公开投稿原始数据。
 
 ## 项目边界
 
-当前主干不包含登录、评论、数据库、在线投稿后台、复杂筛选、AI 问答或动态推荐。搜索页已预留，后续可单独接入 Pagefind。
+当前主干专注于静态内容站的稳定骨架，包括内容模型、基础页面、文章列表、文章详情、分类页、搜索与标签筛选。
+
+暂不包含：
+
+- 登录与用户系统
+- 评论与收藏
+- 数据库
+- 在线投稿后台
+- AI 问答或动态推荐
+- 复杂多维筛选面板
+
+这些能力如有需要，应在后续迭代中单独设计、评估和接入。

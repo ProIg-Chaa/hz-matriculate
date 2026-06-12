@@ -30,7 +30,7 @@ const author = article.data.author;
           <span>{getAuthorLabel(author)}</span>
         </div>
         <div class="chips" aria-label="文章标签">
-          {article.data.tags.map((tag) => <span class="chip">{tag}</span>)}
+          {article.data.tags.map((tag) => <span class="chip" data-pagefind-filter="tag">{tag}</span>)}
         </div>
       </div>
     </header>

@@ -1,0 +1,81 @@
+---
+import { getCollection, render } from "astro:content";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import ArticleCard from "../../components/ArticleCard.astro";
+import { formatDate } from "../../lib/articles";
+import {
+  getAnswersForQuestion,
+  getQuestionAskerLabel,
+  getQuestionSlug
+} from "../../lib/questions";
+
+export async function getStaticPaths() {
+  const questions = await getCollection("questions");
+  return questions.map((question) => ({
+    params: { slug: getQuestionSlug(question) },
+    props: { question }
+  }));
+}
+
+const { question } = Astro.props;
+const { Content } = await render(question);
+const articles = await getCollection("articles");
+const answers = getAnswersForQuestion(question, articles);
+const status = answers.length > 0 ? "已回答" : "征集中";
+---
+
+<BaseLayout title={question.data.title} description={question.data.description}>
+  <article>
+    <header class="article-header">
+      <div class="narrow">
+        <p class="eyebrow">Question · {status}</p>
+        <h1>{question.data.title}</h1>
+        <p class="lead">{question.data.description}</p>
+        <div class="meta">
+          <span>提出于 {formatDate(question.data.date)}</span>
+          <span>更新于 {formatDate(question.data.updated)}</span>
+          <span>{getQuestionAskerLabel(question)}</span>
+          <span>{answers.length} 个回答</span>
+        </div>
+        <div class="chips" aria-label="问题标签">
+          {question.data.tags.map((tag) => <span class="chip">{tag}</span>)}
+        </div>
+      </div>
+    </header>
+
+    <div class="narrow">
+      <div class="prose">
+        <Content />
+      </div>
+
+      <section class="section question-answers">
+        <div class="section-heading">
+          <div>
+            <h2>相关回答</h2>
+            <p>
+              {
+                answers.length > 0
+                  ? "以下回答来自校友个人经验，可结合多个视角一起阅读。"
+                  : "这个问题正在征集答案，欢迎校友围绕它补充真实经历。"
+              }
+            </p>
+          </div>
+        </div>
+        <div class="article-list">
+          {
+            answers.length > 0
+              ? answers.map((answer) => <ArticleCard article={answer} headingLevel="h3" />)
+              : <p class="notice">正在征集答案。你可以从投稿入口提交围绕这个问题的回答。</p>
+          }
+        </div>
+      </section>
+    </div>
+  </article>
+</BaseLayout>
+
+<style>
+  .question-answers {
+    padding-bottom: 0;
+  }
+</style>
+

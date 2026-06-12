@@ -1,5 +1,13 @@
 ---
+import { getCollection } from "astro:content";
 import BaseLayout from "../layouts/BaseLayout.astro";
+import { getArticleSlug } from "../lib/articles";
+
+const allArticles = await getCollection("articles");
+const allTags = [...new Set(allArticles.flatMap((a) => a.data.tags))].sort();
+const articleTagsByPath = Object.fromEntries(
+  allArticles.map((article) => [`/articles/${getArticleSlug(article)}/`, article.data.tags])
+);
 ---
 
 <BaseLayout title="搜索">
@@ -12,7 +20,28 @@ import BaseLayout from "../layouts/BaseLayout.astro";
   </header>
   <section class="section">
     <div class="narrow">
+      {
+        allTags.length > 0 && (
+          <div class="tag-filter" aria-label="按标签筛选">
+            <div class="tag-filter-head">
+              <span class="tag-filter-label">按标签筛选：</span>
+              <button class="tag-filter-clear" type="button" hidden>清空</button>
+            </div>
+            <div>
+              <div class="tag-filter-chips">
+                {allTags.map((tag) => (
+                  <button class="chip tag-filter-chip" type="button" data-tag={tag} aria-pressed="false">
+                    {tag}
+                  </button>
+                ))}
+              </div>
+              <p class="tag-filter-status" aria-live="polite"></p>
+            </div>
+          </div>
+        )
+      }
       <div id="search"></div>
+      <div id="tag-results" class="article-list" data-article-tags={JSON.stringify(articleTagsByPath)} hidden></div>
       <noscript>
         <p class="notice">搜索需要启用 JavaScript。</p>
       </noscript>
@@ -37,12 +66,33 @@ import BaseLayout from "../layouts/BaseLayout.astro";
     });
   }
 
+  function applyInitialQuery() {
+    const params = new URLSearchParams(window.location.search);
+    const q = params.get("q")?.trim();
+    if (!q) return;
+
+    const input = document.querySelector(".pagefind-ui__search-input");
+    if (!input) {
+      // PagefindUI may not have rendered its input yet — retry once
+      setTimeout(() => {
+        const retryInput = document.querySelector(".pagefind-ui__search-input");
+        if (retryInput) {
+          retryInput.value = q;
+          retryInput.dispatchEvent(new Event("input", { bubbles: true }));
+        }
+      }, 300);
+      return;
+    }
+
+    input.value = q;
+    input.dispatchEvent(new Event("input", { bubbles: true }));
+  }
+
   async function initSearch() {
     const container = document.getElementById("search");
     if (!container) return;
 
     try {
-      // PagefindUI 无法加载时（如开发环境），显示提示
       const existingStylesheet = document.querySelector("link[href='/pagefind/pagefind-ui.css']");
       if (!existingStylesheet) {
         const stylesheet = document.createElement("link");
@@ -58,7 +108,7 @@ import BaseLayout from "../layouts/BaseLayout.astro";
         throw new Error("PagefindUI is not available.");
       }
 
-      new PagefindUI({
+      const pfUI = new PagefindUI({
         element: "#search",
         showSubResults: true,
         autofocus: true,
@@ -70,6 +120,9 @@ import BaseLayout from "../layouts/BaseLayout.astro";
           search_label: "搜索全站",
         },
       });
+
+      initTagFilter();
+      applyInitialQuery();
     } catch {
       container.innerHTML = `
         <div class="notice">
@@ -80,11 +133,249 @@ import BaseLayout from "../layouts/BaseLayout.astro";
     }
   }
 
+  function initTagFilter() {
+    const chips = document.querySelectorAll(".tag-filter-chip");
+    const searchContainer = document.getElementById("search");
+    const tagResults = document.getElementById("tag-results");
+    const clearButton = document.querySelector(".tag-filter-clear");
+    const status = document.querySelector(".tag-filter-status");
+    const articleTagsByPath = JSON.parse(tagResults?.dataset.articleTags || "{}");
+    const selectedTags = new Set();
+    let pagefindInstance = null;
+
+    async function getPagefind() {
+      if (pagefindInstance) return pagefindInstance;
+      pagefindInstance = await import("/pagefind/pagefind.js");
+      if (typeof pagefindInstance.init === "function") {
+        await pagefindInstance.init();
+      }
+      return pagefindInstance;
+    }
+
+    function escapeHTML(value) {
+      return String(value)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+    function normalizePath(url) {
+      try {
+        const path = new URL(url, window.location.origin).pathname;
+        return path.endsWith("/") ? path : `${path}/`;
+      } catch {
+        return url;
+      }
+    }
+
+    function getArticleTags(result) {
+      const path = normalizePath(result.url || result.raw_url || "");
+      return articleTagsByPath[path] || [];
+    }
+
+    function buildTagsHTML(tags) {
+      if (tags.length === 0) return "";
+
+      return `
+        <div class="chips" aria-label="文章真实标签">
+          ${tags.map((tag) => `<span class="chip">${escapeHTML(tag)}</span>`).join("")}
+        </div>`;
+    }
+
+    function buildResultHTML(result) {
+      const url = result.url || result.raw_url || "#";
+      const title = result.meta?.title || "无标题";
+      const excerpt = result.excerpt || "";
+      const articleTags = getArticleTags(result);
+
+      return `
+        <article class="article-card">
+          <div>
+            <h3><a href="${escapeHTML(url)}">${escapeHTML(title)}</a></h3>
+            <p>${excerpt}</p>
+          </div>
+          ${buildTagsHTML(articleTags)}
+        </article>`;
+    }
+
+    async function searchByTags() {
+      const tags = [...selectedTags];
+      const selectedLabel = tags.join("、");
+
+      if (tags.length === 0) {
+        clearFilter();
+        return;
+      }
+
+      tagResults.innerHTML = `<p class="tag-filter-loading">正在筛选「${escapeHTML(selectedLabel)}」相关文章...</p>`;
+      tagResults.hidden = false;
+      searchContainer.hidden = true;
+
+      try {
+        const pf = await getPagefind();
+        const search = await pf.search(null, { filters: { tag: { all: tags } } });
+        const results = await Promise.all(search.results.map((r) => r.data()));
+
+        if (results.length === 0) {
+          tagResults.innerHTML = `<div class="notice"><p>没有找到同时匹配当前标签选择的文章。</p><p style="margin-top: 8px;">可以少选几个标签，或直接使用关键词搜索。</p></div>`;
+          return;
+        }
+
+        tagResults.innerHTML = results.map((r) => buildResultHTML(r)).join("");
+      } catch (err) {
+        console.error("Tag filter search failed:", err);
+        tagResults.innerHTML = `<div class="notice"><p>筛选搜索失败，请稍后重试。</p></div>`;
+      }
+    }
+
+    function updateFilterState() {
+      const count = selectedTags.size;
+      chips.forEach((chip) => {
+        const isActive = selectedTags.has(chip.dataset.tag);
+        chip.classList.toggle("active", isActive);
+        chip.setAttribute("aria-pressed", String(isActive));
+      });
+
+      if (clearButton) {
+        clearButton.hidden = count === 0;
+      }
+
+      if (status) {
+        status.textContent = count > 0 ? `已选择 ${count} 个标签。再次点击标签可取消选择。` : "";
+      }
+    }
+
+    function clearFilter() {
+      selectedTags.clear();
+      updateFilterState();
+      tagResults.innerHTML = "";
+      tagResults.hidden = true;
+      searchContainer.hidden = false;
+    }
+
+    chips.forEach((chip) => {
+      chip.addEventListener("click", async () => {
+        const tag = chip.dataset.tag;
+
+        if (selectedTags.has(tag)) {
+          selectedTags.delete(tag);
+        } else {
+          selectedTags.add(tag);
+        }
+
+        updateFilterState();
+        await searchByTags();
+      });
+    });
+
+    clearButton?.addEventListener("click", clearFilter);
+  }
+
   initSearch();
 </script>
 
 <style>
   #search {
     min-height: 240px;
+  }
+
+  .tag-filter {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 10px;
+    margin-bottom: 24px;
+  }
+
+  .tag-filter-head {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding-top: 4px;
+  }
+
+  .tag-filter-label,
+  .tag-filter-status {
+    color: var(--muted);
+    font-size: 0.94rem;
+  }
+
+  .tag-filter-label {
+    white-space: nowrap;
+  }
+
+  .tag-filter-clear {
+    border: 0;
+    background: transparent;
+    color: var(--accent-dark);
+    cursor: pointer;
+    font: inherit;
+    font-size: 0.88rem;
+    padding: 0;
+  }
+
+  .tag-filter-clear:hover {
+    color: var(--accent);
+    text-decoration: underline;
+  }
+
+  .tag-filter-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .tag-filter-chip {
+    cursor: pointer;
+    user-select: none;
+    transition:
+      background-color 180ms ease,
+      border-color 180ms ease,
+      color 180ms ease,
+      box-shadow 180ms ease;
+  }
+
+  .tag-filter-chip:hover {
+    border-color: var(--accent);
+    background: rgba(154, 107, 63, 0.2);
+  }
+
+  .tag-filter-chip.active {
+    background: var(--accent-dark);
+    border-color: var(--accent-dark);
+    color: #fffefa;
+  }
+
+  .tag-filter-chip.active:hover {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #fffefa;
+  }
+
+  .tag-filter-status,
+  .tag-filter-loading {
+    margin: 10px 0 0;
+  }
+
+  .tag-filter-loading {
+    color: var(--muted);
+    text-align: center;
+    padding: 24px 0;
+  }
+
+  #tag-results {
+    margin-top: 18px;
+  }
+
+  @media (max-width: 700px) {
+    .tag-filter {
+      grid-template-columns: 1fr;
+    }
+
+    .tag-filter-head {
+      justify-content: space-between;
+      padding-top: 0;
+    }
   }
 </style>

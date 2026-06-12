@@ -170,6 +170,48 @@ code {
   text-decoration: none;
 }
 
+.header-search {
+  position: relative;
+  flex: 0 1 240px;
+  min-width: 160px;
+}
+
+.header-search svg {
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--muted);
+  pointer-events: none;
+}
+
+.header-search input {
+  width: 100%;
+  height: 36px;
+  padding: 0 12px 0 32px;
+  border: 1px solid var(--line-soft);
+  border-radius: 999px;
+  background: rgba(255, 254, 250, 0.7);
+  color: var(--text);
+  font-size: 0.9rem;
+  font-family: inherit;
+  transition:
+    border-color 180ms ease,
+    box-shadow 180ms ease,
+    background-color 180ms ease;
+}
+
+.header-search input::placeholder {
+  color: var(--muted);
+}
+
+.header-search input:focus {
+  outline: none;
+  border-color: rgba(154, 107, 63, 0.42);
+  background: var(--surface);
+  box-shadow: 0 0 0 3px rgba(154, 107, 63, 0.12);
+}
+
 main {
   flex: 1;
 }
@@ -536,6 +578,10 @@ a.card:hover {
 
   .site-nav {
     justify-content: flex-start;
+  }
+
+  .header-search {
+    width: 100%;
   }
 
   .hero {

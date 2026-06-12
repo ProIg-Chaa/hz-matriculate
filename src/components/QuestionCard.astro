@@ -1,0 +1,31 @@
+---
+import { formatDate } from "../lib/articles";
+import { getQuestionAskerLabel, getQuestionUrl, type Question } from "../lib/questions";
+
+interface Props {
+  question: Question;
+  answerCount: number;
+  headingLevel?: "h2" | "h3";
+}
+
+const { question, answerCount, headingLevel = "h2" } = Astro.props;
+const Heading = headingLevel;
+const status = answerCount > 0 ? "已回答" : "征集中";
+---
+
+<article class="article-card">
+  <div class="meta">
+    <span class="category-pill">{status}</span>
+    <span>{answerCount} 个回答</span>
+    <span>更新于 {formatDate(question.data.updated)}</span>
+    <span>{getQuestionAskerLabel(question)}</span>
+  </div>
+  <Heading>
+    <a href={getQuestionUrl(question)}>{question.data.title}</a>
+  </Heading>
+  <p>{question.data.description}</p>
+  <div class="chips" aria-label="问题标签">
+    {question.data.tags.map((tag) => <span class="chip">{tag}</span>)}
+  </div>
+</article>
+

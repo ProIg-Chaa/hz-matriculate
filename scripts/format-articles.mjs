@@ -13,6 +13,7 @@ const categorySlugs = {
   "专业体验": "major-review",
   "大学生活": "university-life",
   "发展路径": "pathways",
+  "问题回答": "question-answer",
   "项目公告": "announcement"
 };
 

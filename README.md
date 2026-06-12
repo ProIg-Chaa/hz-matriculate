@@ -85,6 +85,15 @@ npm run format:articles -- --force
 
 格式化脚本只做结构化和轻量排版，不改写作者语气，也不会直接写入 `src/content/articles/`。formatted 文件仍需人工审核标题、分类、标签和隐私信息后，再移动或复制到正式发布目录。
 
+问题与回答内容分为两类维护：
+
+```text
+src/content/questions/  高中生和应届生提出的问题
+src/content/articles/   围绕问题整理出的回答文章
+```
+
+问题回答仍然是文章的一种，`category` 使用 `问题回答`，并通过 `question` 字段关联到对应问题 slug。问题页面会根据关联回答数量自动显示“已回答”或“征集中”。
+
 正式发布文章使用 Markdown 编写，并通过 `src/content.config.ts` 中的 schema 校验。当前 Article frontmatter 包含：
 
 ```text
@@ -94,6 +103,7 @@ date
 updated
 category
 tags
+question
 author
 audience
 review
@@ -108,6 +118,8 @@ display
 /                      首页
 /articles/             文章列表
 /articles/[slug]/      文章详情
+/questions/            问题列表
+/questions/[slug]/     问题详情与关联回答
 /categories/[category]/ 分类页
 /search/               搜索与标签筛选
 /submit/               投稿说明

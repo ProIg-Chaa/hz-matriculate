@@ -94,6 +94,12 @@ POST /likes/:slug   给文章点赞并返回最新点赞数
 https://jihuway.org,http://127.0.0.1:4322,http://localhost:4322
 ```
 
+完整部署、域名、CORS、GitHub Actions 变量和故障排查流程见：
+
+```text
+doc/like-api-setup.md
+```
+
 ## 内容维护
 
 文章维护分为三层：

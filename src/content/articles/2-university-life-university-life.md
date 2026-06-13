@@ -21,7 +21,7 @@ audience:
 review:
   status: "editing"
 display:
-  featured: false
+  featured: true
   showDisclaimer: true
 ---
 

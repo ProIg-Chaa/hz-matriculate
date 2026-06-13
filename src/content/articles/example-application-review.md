@@ -23,7 +23,7 @@ review:
   reviewer: "maintainer"
   reviewedAt: "2026-06-10"
 display:
-  featured: true
+  featured: false
   showDisclaimer: true
 ---
 

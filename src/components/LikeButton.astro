@@ -1,0 +1,100 @@
+---
+interface Props {
+  slug: string;
+}
+
+const { slug } = Astro.props;
+const endpoint = import.meta.env.PUBLIC_LIKE_API_URL || "";
+---
+
+<section
+  class="like-panel"
+  data-like-widget
+  data-like-slug={slug}
+  data-like-endpoint={endpoint}
+  aria-label="文章点赞"
+>
+  <div>
+    <strong>觉得这篇有帮助？</strong>
+    <span data-like-count>--</span>
+  </div>
+  <button class="like-button" type="button" data-like-button disabled>点赞</button>
+  <p data-like-status>点赞服务加载中。</p>
+</section>
+
+<script is:inline>
+  (() => {
+    const widgets = document.querySelectorAll("[data-like-widget]");
+
+    for (const widget of widgets) {
+      const slug = widget.getAttribute("data-like-slug");
+      const endpoint = widget.getAttribute("data-like-endpoint");
+      const countEl = widget.querySelector("[data-like-count]");
+      const button = widget.querySelector("[data-like-button]");
+      const statusEl = widget.querySelector("[data-like-status]");
+
+      if (!slug || !countEl || !button || !statusEl) continue;
+
+      if (!endpoint) {
+        countEl.textContent = "暂未启用";
+        statusEl.textContent = "点赞服务尚未配置。";
+        return;
+      }
+
+      const apiBase = endpoint.replace(/\/$/, "");
+      const likeUrl = `${apiBase}/likes/${encodeURIComponent(slug)}`;
+      const storageKey = `jihuway:liked:${slug}`;
+      const liked = window.localStorage.getItem(storageKey) === "true";
+
+      const setButtonState = (hasLiked) => {
+        button.disabled = hasLiked;
+        button.textContent = hasLiked ? "已点赞" : "点赞";
+        button.setAttribute("aria-pressed", hasLiked ? "true" : "false");
+      };
+
+      const setStatus = (message) => {
+        statusEl.textContent = message;
+      };
+
+      setButtonState(liked);
+      setStatus(liked ? "你已经给这篇文章点过赞。" : "轻点一下，告诉后来的人这篇有帮助。");
+
+      fetch(likeUrl)
+        .then((response) => {
+          if (!response.ok) throw new Error("Failed to load likes");
+          return response.json();
+        })
+        .then((data) => {
+          countEl.textContent = `${Number(data.likes || 0)} 个赞`;
+        })
+        .catch(() => {
+          countEl.textContent = "读取失败";
+          setStatus("暂时无法读取点赞数。");
+        });
+
+      button.addEventListener("click", async () => {
+        if (window.localStorage.getItem(storageKey) === "true") {
+          setButtonState(true);
+          setStatus("你已经给这篇文章点过赞。");
+          return;
+        }
+
+        button.disabled = true;
+        setStatus("正在记录点赞...");
+
+        try {
+          const response = await fetch(likeUrl, { method: "POST" });
+          if (!response.ok) throw new Error("Failed to like article");
+          const data = await response.json();
+          window.localStorage.setItem(storageKey, "true");
+          countEl.textContent = `${Number(data.likes || 0)} 个赞`;
+          setButtonState(true);
+          setStatus("谢谢，这会帮助我们判断哪些内容更值得优先维护。");
+        } catch {
+          button.disabled = false;
+          setStatus("点赞失败，请稍后再试。");
+        }
+      });
+    }
+  })();
+</script>

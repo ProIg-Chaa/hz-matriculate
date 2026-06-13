@@ -57,9 +57,36 @@ npm run preview
 PUBLIC_SITE_NAME=
 PUBLIC_SITE_DESCRIPTION=
 PUBLIC_SUBMISSION_FORM_URL=
+PUBLIC_LIKE_API_URL=
 ```
 
 投稿表单链接尚未确定时可以留空，页面会显示占位提示。
+
+`PUBLIC_LIKE_API_URL` 用于文章点赞功能。未填写时，文章详情页会显示点赞入口但保持禁用；填写后应指向点赞 API 根地址，例如 Cloudflare Worker 的公开地址。
+
+## 文章点赞
+
+本站仍然是静态站，点赞计数需要一个可写的外部服务。当前仓库提供了最小 Cloudflare Worker 示例：
+
+```text
+workers/likes-worker.mjs
+```
+
+推荐接入方式：
+
+1. 在 Cloudflare 创建 Worker。
+2. 创建 KV namespace，并绑定到 Worker，绑定名为 `LIKES`。
+3. 将 `workers/likes-worker.mjs` 部署为 Worker 代码。
+4. 将 Worker 地址填入站点环境变量 `PUBLIC_LIKE_API_URL`。
+
+Worker 暴露的接口：
+
+```text
+GET  /likes/:slug   读取文章点赞数
+POST /likes/:slug   给文章点赞并返回最新点赞数
+```
+
+前端会用浏览器 `localStorage` 记录“当前浏览器是否点过这篇文章”，用于最小防重复。它不是账号系统，也不提供严格反作弊能力；如果之后需要更强的统计、限流或用户身份，再单独升级为 D1、Supabase 或带登录的服务。
 
 ## 内容维护
 

@@ -587,6 +587,66 @@ a.card:hover {
   color: var(--text);
 }
 
+.like-panel {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin: 0 0 20px;
+  border: 1px solid var(--line-soft);
+  border-radius: var(--radius);
+  background: var(--surface-elevated);
+  padding: 16px 18px;
+  box-shadow: 0 1px 0 rgba(37, 35, 30, 0.02);
+  backdrop-filter: blur(14px);
+}
+
+.like-panel strong,
+.like-panel span {
+  display: block;
+}
+
+.like-panel span {
+  color: var(--accent-dark);
+  font-weight: 800;
+}
+
+.like-panel p {
+  margin: 4px 0 0;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.like-button {
+  flex: 0 0 auto;
+  min-height: 40px;
+  border: 1px solid rgba(154, 107, 63, 0.24);
+  border-radius: 999px;
+  background: rgba(154, 107, 63, 0.1);
+  color: var(--accent-dark);
+  cursor: pointer;
+  font: inherit;
+  font-weight: 800;
+  padding: 8px 15px;
+  transition:
+    border-color 180ms ease,
+    box-shadow 180ms ease,
+    transform 180ms ease,
+    background-color 180ms ease;
+}
+
+.like-button:hover:not(:disabled) {
+  border-color: rgba(154, 107, 63, 0.44);
+  background: rgba(154, 107, 63, 0.16);
+  box-shadow: 0 10px 20px rgba(154, 107, 63, 0.14);
+  transform: translateY(-1px);
+}
+
+.like-button:disabled {
+  cursor: default;
+  opacity: 0.68;
+}
+
 .reveal-target {
   opacity: 0;
   transform: translateY(14px);
@@ -711,6 +771,11 @@ a.card:hover {
 
   .prose {
     padding: 22px;
+  }
+
+  .like-panel {
+    align-items: flex-start;
+    flex-direction: column;
   }
 }
 

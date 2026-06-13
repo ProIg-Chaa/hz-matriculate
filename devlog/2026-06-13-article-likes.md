@@ -21,3 +21,4 @@ The site is static, so article likes need a small writable service outside Astro
 
 - Build validation should confirm Astro, sitemap, and Pagefind still complete successfully.
 - Manual validation should check article pages with and without `PUBLIC_LIKE_API_URL`.
+- After local testing, the Worker CORS helper was adjusted to accept comma-separated `ALLOWED_ORIGIN` values so production and local preview origins can be allowed together.

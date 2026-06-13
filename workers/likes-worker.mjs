@@ -5,8 +5,12 @@ const JSON_HEADERS = {
 
 function getCorsHeaders(request, env) {
   const origin = request.headers.get("origin") || "";
-  const allowedOrigin = env.ALLOWED_ORIGIN || "*";
-  const allowOrigin = allowedOrigin === "*" || allowedOrigin === origin ? origin || "*" : allowedOrigin;
+  const allowedOrigins = (env.ALLOWED_ORIGIN || "*")
+    .split(",")
+    .map((item) => item.trim())
+    .filter(Boolean);
+  const allowAnyOrigin = allowedOrigins.includes("*");
+  const allowOrigin = allowAnyOrigin || allowedOrigins.includes(origin) ? origin || "*" : allowedOrigins[0] || "*";
 
   return {
     "access-control-allow-origin": allowOrigin,

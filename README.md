@@ -190,3 +190,17 @@ CONTRIBUTING.md
 - 复杂多维筛选面板
 
 这些能力如有需要，应在后续迭代中单独设计、评估和接入。
+
+
+## csv 转 md 使用方法
+
+1. 将导出的csv文件放入 `article/csv/` 
+2. 执行转换：
+	```bash
+	npm run csv:preview # 预览
+    ```
+    ```bash
+	npm run csv:convert # 转换
+	```
+
+注：默认扫描 `article/csv/` 内的所有csv，批量处理，转换后自动归档到 `article/csv/archived/` ，防止重复转换（预览时不归档）

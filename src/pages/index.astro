@@ -9,7 +9,7 @@ import { getAnswersForQuestion, sortQuestionsByUpdatedDesc } from "../lib/questi
 
 const allArticles = sortArticlesByUpdatedDesc(await getCollection("articles"));
 const allQuestions = sortQuestionsByUpdatedDesc(await getCollection("questions"));
-const featuredArticles = allArticles.filter((article) => article.data.display.featured).slice(0, 3);
+const featuredArticles = allArticles.filter((article) => article.data.display.featured);
 const latestArticles = allArticles.slice(0, 4);
 const highlightedQuestions = allQuestions.slice(0, 2);
 const articleCount = allArticles.length;

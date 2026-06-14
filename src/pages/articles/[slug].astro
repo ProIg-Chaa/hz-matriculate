@@ -20,6 +20,13 @@ const author = article.data.author;
 
 <BaseLayout title={article.data.title} description={article.data.description} ogType="article">
   <article>
+    {
+      article.data.source?.submissionId && (
+        <div class="source-corner" aria-label={`投稿编号 ${article.data.source.submissionId}`}>
+          #{article.data.source.submissionId}
+        </div>
+      )
+    }
     <header class="article-header">
       <div class="narrow">
         <p class="eyebrow">{article.data.category}</p>

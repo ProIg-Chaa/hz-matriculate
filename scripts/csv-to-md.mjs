@@ -303,6 +303,8 @@ function buildArticle(record) {
     "tags:",
     yamlList(tags, "  "),
     ...(hasQuestion ? [`question: ${quoteYaml(record["关联问题"].trim())}`] : []),
+    "source:",
+    `  submissionId: ${quoteYaml(record["投稿编号"]?.trim() || "")}`,
     "author:",
     `  name: ${quoteYaml(displayName)}`,
     `  graduationYear: ${quoteYaml(record["毕业届数"]?.trim() || "")}`,

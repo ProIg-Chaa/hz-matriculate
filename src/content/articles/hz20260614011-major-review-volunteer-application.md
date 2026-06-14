@@ -16,6 +16,8 @@ tags:
   - "<1000"
   - "北京大学"
   - "阿拉伯语"
+source:
+  submissionId: "HZ20260614011"
 author:
   name: "何康明"
   graduationYear: "2024"

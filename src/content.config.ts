@@ -36,6 +36,9 @@ const articles = defineCollection({
     ]),
     tags: z.array(z.string()).default([]),
     question: z.string().optional(),
+    source: z.object({
+      submissionId: z.string().optional()
+    }).optional(),
     author: authorSchema,
     audience: z.array(z.string()).default([]),
     review: z.object({

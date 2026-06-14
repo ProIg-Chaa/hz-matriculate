@@ -556,6 +556,23 @@ a.card:hover {
   padding: 64px 0 24px;
 }
 
+.source-corner {
+  position: fixed;
+  right: 18px;
+  bottom: 18px;
+  z-index: 3;
+  border: 1px solid rgba(154, 107, 63, 0.13);
+  border-radius: 999px;
+  background: rgba(255, 254, 250, 0.48);
+  color: rgba(111, 74, 45, 0.48);
+  font-size: 0.78rem;
+  font-weight: 800;
+  line-height: 1;
+  padding: 7px 10px;
+  pointer-events: none;
+  backdrop-filter: blur(10px);
+}
+
 .article-header h1 {
   max-width: 14em;
   font-size: 3.15rem;
@@ -752,6 +769,13 @@ a.card:hover {
   .page-header h1,
   .article-header h1 {
     font-size: 2.25rem;
+  }
+
+  .source-corner {
+    right: 12px;
+    bottom: 12px;
+    font-size: 0.72rem;
+    padding: 6px 8px;
   }
 
   .section {

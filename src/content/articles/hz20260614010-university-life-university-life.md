@@ -16,6 +16,8 @@ tags:
   - "光电信息科学与工程"
   - "大二在读"
   - "光电专业真实情况分享"
+source:
+  submissionId: "HZ20260614010"
 author:
   name: "比利王"
   graduationYear: "2024"

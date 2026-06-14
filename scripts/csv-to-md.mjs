@@ -218,14 +218,23 @@ function yamlList(values, indent = "") {
   return values.map((v) => `${indent}- ${quoteYaml(v)}`).join("\n");
 }
 
+function uniqueValues(values) {
+  return [...new Set(values.map((value) => value.trim()).filter(Boolean))];
+}
+
 // ── 构建文章 ─────────────────────────────────────────────────
 
 function buildArticle(record) {
-  const tags = [
+  const shouldShowSchoolInfo = record["是否展示位次，院校与专业"] === "是";
+  const publicSchoolInfoTags = shouldShowSchoolInfo
+    ? [record["高考位次"], record["就读院校"], record["就读专业"]]
+    : [];
+  const tags = uniqueValues([
     ...parseMultiValue(record["文章类型"] || ""),
     ...parseMultiValue(record["其他类型"] || ""),
-    record["选科组合"] ? record["选科组合"].trim() : null
-  ].filter(Boolean);
+    ...parseMultiValue(record["选科组合"] || ""),
+    ...publicSchoolInfoTags
+  ]);
 
   const body = (record["自由投稿正文"] || "").trim();
   const category = inferCategory(tags, body);

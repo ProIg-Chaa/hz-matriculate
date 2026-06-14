@@ -44,31 +44,21 @@ const archiveDir = path.join(defaultCsvDir, "archived");
 
 function parseCSV(raw) {
   // 去除可能的 BOM 和多余空行，统一换行符
-  const text = raw.replace(/^﻿/, "").replace(/\r\n/g, "\n").trim();
-  const lines = text.split("\n");
-  if (lines.length < 2) return { header: [], rows: [] };
+  const text = raw.replace(/^﻿/, "").replace(/\r\n/g, "\n").replace(/\r/g, "\n").trim();
+  if (!text) return { header: [], rows: [] };
 
-  const header = parseCSVLine(lines[0]);
-  const rows = [];
-  for (let i = 1; i < lines.length; i++) {
-    const line = lines[i].trim();
-    if (!line) continue;
-    rows.push(parseCSVLine(line));
-  }
-  return { header, rows };
-}
-
-function parseCSVLine(line) {
-  const fields = [];
+  const records = [];
+  let record = [];
   let current = "";
   let inQuotes = false;
 
-  for (let i = 0; i < line.length; i++) {
-    const ch = line[i];
+  for (let i = 0; i < text.length; i++) {
+    const ch = text[i];
+
     if (inQuotes) {
       if (ch === '"') {
         // 可能是引号字段的结束，或者是转义后的引号 ""
-        if (line[i + 1] === '"') {
+        if (text[i + 1] === '"') {
           current += '"';
           i++;
         } else {
@@ -81,15 +71,30 @@ function parseCSVLine(line) {
       if (ch === '"') {
         inQuotes = true;
       } else if (ch === ",") {
-        fields.push(current.trim());
+        record.push(current.trim());
         current = "";
+      } else if (ch === "\n") {
+        record.push(current.trim());
+        current = "";
+        if (record.some((field) => field !== "")) {
+          records.push(record);
+        }
+        record = [];
       } else {
         current += ch;
       }
     }
   }
-  fields.push(current.trim());
-  return fields;
+
+  record.push(current.trim());
+  if (record.some((field) => field !== "")) {
+    records.push(record);
+  }
+
+  if (records.length < 2) return { header: records[0] || [], rows: [] };
+
+  const [header, ...rows] = records;
+  return { header, rows };
 }
 
 function rowToRecord(header, row) {

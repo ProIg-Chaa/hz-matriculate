@@ -7,7 +7,9 @@
     "dev": "astro dev",
     "build": "astro build && pagefind --site dist",
     "preview": "astro preview",
-    "format:articles": "node scripts/format-articles.mjs"
+    "format:articles": "node scripts/format-articles.mjs",
+    "csv:preview": "node scripts/csv-to-md.mjs --dry-run",
+    "csv:convert": "node scripts/csv-to-md.mjs"
   },
   "dependencies": {
     "@astrojs/sitemap": "^3.7.3",

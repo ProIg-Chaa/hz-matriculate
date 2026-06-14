@@ -44,31 +44,21 @@ const archiveDir = path.join(defaultCsvDir, "archived");
 
 function parseCSV(raw) {
   // 去除可能的 BOM 和多余空行，统一换行符
-  const text = raw.replace(/^﻿/, "").replace(/\r\n/g, "\n").trim();
-  const lines = text.split("\n");
-  if (lines.length < 2) return { header: [], rows: [] };
+  const text = raw.replace(/^﻿/, "").replace(/\r\n/g, "\n").replace(/\r/g, "\n").trim();
+  if (!text) return { header: [], rows: [] };
 
-  const header = parseCSVLine(lines[0]);
-  const rows = [];
-  for (let i = 1; i < lines.length; i++) {
-    const line = lines[i].trim();
-    if (!line) continue;
-    rows.push(parseCSVLine(line));
-  }
-  return { header, rows };
-}
-
-function parseCSVLine(line) {
-  const fields = [];
+  const records = [];
+  let record = [];
   let current = "";
   let inQuotes = false;
 
-  for (let i = 0; i < line.length; i++) {
-    const ch = line[i];
+  for (let i = 0; i < text.length; i++) {
+    const ch = text[i];
+
     if (inQuotes) {
       if (ch === '"') {
         // 可能是引号字段的结束，或者是转义后的引号 ""
-        if (line[i + 1] === '"') {
+        if (text[i + 1] === '"') {
           current += '"';
           i++;
         } else {
@@ -81,15 +71,30 @@ function parseCSVLine(line) {
       if (ch === '"') {
         inQuotes = true;
       } else if (ch === ",") {
-        fields.push(current.trim());
+        record.push(current.trim());
         current = "";
+      } else if (ch === "\n") {
+        record.push(current.trim());
+        current = "";
+        if (record.some((field) => field !== "")) {
+          records.push(record);
+        }
+        record = [];
       } else {
         current += ch;
       }
     }
   }
-  fields.push(current.trim());
-  return fields;
+
+  record.push(current.trim());
+  if (record.some((field) => field !== "")) {
+    records.push(record);
+  }
+
+  if (records.length < 2) return { header: records[0] || [], rows: [] };
+
+  const [header, ...rows] = records;
+  return { header, rows };
 }
 
 function rowToRecord(header, row) {
@@ -213,16 +218,64 @@ function yamlList(values, indent = "") {
   return values.map((v) => `${indent}- ${quoteYaml(v)}`).join("\n");
 }
 
+function uniqueValues(values) {
+  return [...new Set(values.map((value) => String(value || "").trim()).filter(Boolean))];
+}
+
+function buildGraduationYearTag(raw) {
+  const value = raw.trim();
+  if (!value) return null;
+  return value.endsWith("届") ? value : `${value}届`;
+}
+
+function buildSubjectComboTag(raw) {
+  const subjects = parseMultiValue(raw);
+  if (subjects.length <= 1) return subjects[0] || null;
+
+  const shortNames = {
+    "物理": "物",
+    "化学": "化",
+    "生物": "生",
+    "历史": "史",
+    "地理": "地",
+    "政治": "政"
+  };
+
+  return subjects.map((subject) => shortNames[subject] || subject).join("");
+}
+
+function extractBodyField(body, label) {
+  const escapedLabel = label.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const match = body.match(new RegExp(`(?:^|\\n)\\s*(?:\\d+[.、]\\s*)?${escapedLabel}[：:]\\s*([^\\n\\r]+)`));
+  return match ? match[1].trim() : null;
+}
+
+function extractTemplateTagFields(body) {
+  // Not every submission uses the template. These tags are optional enhancements only.
+  return uniqueValues([
+    extractBodyField(body, "当前年级/状态"),
+    extractBodyField(body, "本次分享重点")
+  ]);
+}
+
 // ── 构建文章 ─────────────────────────────────────────────────
 
 function buildArticle(record) {
-  const tags = [
+  const shouldShowSchoolInfo = record["是否展示位次，院校与专业"] === "是";
+  const publicSchoolInfoTags = shouldShowSchoolInfo
+    ? [record["高考位次"], record["就读院校"], record["就读专业"]]
+    : [];
+  const tags = uniqueValues([
     ...parseMultiValue(record["文章类型"] || ""),
     ...parseMultiValue(record["其他类型"] || ""),
-    record["选科组合"] ? record["选科组合"].trim() : null
-  ].filter(Boolean);
+    buildGraduationYearTag(record["毕业届数"] || ""),
+    buildSubjectComboTag(record["选科组合"] || ""),
+    ...parseMultiValue(record["选科组合"] || ""),
+    ...publicSchoolInfoTags
+  ]);
 
   const body = (record["自由投稿正文"] || "").trim();
+  tags.push(...extractTemplateTagFields(body));
   const category = inferCategory(tags, body);
   const title = inferTitle(body);
   const description = inferDescription(body);

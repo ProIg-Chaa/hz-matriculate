@@ -219,7 +219,43 @@ function yamlList(values, indent = "") {
 }
 
 function uniqueValues(values) {
-  return [...new Set(values.map((value) => value.trim()).filter(Boolean))];
+  return [...new Set(values.map((value) => String(value || "").trim()).filter(Boolean))];
+}
+
+function buildGraduationYearTag(raw) {
+  const value = raw.trim();
+  if (!value) return null;
+  return value.endsWith("届") ? value : `${value}届`;
+}
+
+function buildSubjectComboTag(raw) {
+  const subjects = parseMultiValue(raw);
+  if (subjects.length <= 1) return subjects[0] || null;
+
+  const shortNames = {
+    "物理": "物",
+    "化学": "化",
+    "生物": "生",
+    "历史": "史",
+    "地理": "地",
+    "政治": "政"
+  };
+
+  return subjects.map((subject) => shortNames[subject] || subject).join("");
+}
+
+function extractBodyField(body, label) {
+  const escapedLabel = label.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const match = body.match(new RegExp(`(?:^|\\n)\\s*(?:\\d+[.、]\\s*)?${escapedLabel}[：:]\\s*([^\\n\\r]+)`));
+  return match ? match[1].trim() : null;
+}
+
+function extractTemplateTagFields(body) {
+  // Not every submission uses the template. These tags are optional enhancements only.
+  return uniqueValues([
+    extractBodyField(body, "当前年级/状态"),
+    extractBodyField(body, "本次分享重点")
+  ]);
 }
 
 // ── 构建文章 ─────────────────────────────────────────────────
@@ -232,11 +268,14 @@ function buildArticle(record) {
   const tags = uniqueValues([
     ...parseMultiValue(record["文章类型"] || ""),
     ...parseMultiValue(record["其他类型"] || ""),
+    buildGraduationYearTag(record["毕业届数"] || ""),
+    buildSubjectComboTag(record["选科组合"] || ""),
     ...parseMultiValue(record["选科组合"] || ""),
     ...publicSchoolInfoTags
   ]);
 
   const body = (record["自由投稿正文"] || "").trim();
+  tags.push(...extractTemplateTagFields(body));
   const category = inferCategory(tags, body);
   const title = inferTitle(body);
   const description = inferDescription(body);

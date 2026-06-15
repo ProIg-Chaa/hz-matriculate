@@ -457,6 +457,11 @@ a.card:hover {
   transform: translateY(-2px) scale(1.01);
 }
 
+.article-card.featured {
+  border-left: 3px solid var(--accent-warm);
+  background: linear-gradient(135deg, rgba(184, 135, 72, 0.07), var(--surface-elevated) 40%);
+}
+
 .article-card h2,
 .article-card h3 {
   margin: 0;

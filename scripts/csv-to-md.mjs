@@ -154,7 +154,75 @@ function inferTitle(body) {
   return clipText(sentence || "未命名投稿", 28);
 }
 
+// ── Description inference helpers ──────────────────────────────────
+
+function extractSummaryLine(body) {
+  // 从模板"一句话总结"区块提取最终总结内容
+  const lines = body.split("\n");
+  let inSummary = false;
+
+  for (const line of lines) {
+    const trimmed = line.trim();
+
+    // 匹配章节标题："五、一句话总结（必填...）" 等
+    if (/^[一二三四五六七八九十\d]+[、.．]\s*一句话总结/.test(trimmed)) {
+      inSummary = true;
+      continue;
+    }
+
+    if (!inSummary) continue;
+
+    // 离开总结区块：遇到下一个大章节标题
+    if (/^[一二三四五六七八九十\d]+[、.．]/.test(trimmed) && trimmed.length > 4) {
+      break;
+    }
+
+    // 跳过空行
+    if (!trimmed) continue;
+    // 跳过引导短句（如 "对未来想走这条路的学弟学妹说一句话："）
+    if (trimmed.length < 8) continue;
+    if (/^(对|想|请|说|给)/.test(trimmed) && trimmed.length < 35) continue;
+
+    // 找到了 — 这就是一句话总结的正文
+    return trimmed;
+  }
+
+  return null;
+}
+
+function isMetadataLine(line) {
+  // 跳过模板章节标题行
+  if (/^[一二三四五六七八九十\d]+[、.．]\s*(我的|这条|我为什么|踩过|对应|一句话|本次)/.test(line)) {
+    return true;
+  }
+
+  // 跳过以"个人信息："或"基本情况："开头的纯元数据行
+  if (/^(个人信息|基本情况|投稿编号|填报工具)[：:]/.test(line)) return true;
+
+  // 高密度分隔符（/ — ： |），暗示是 key-value 拼接的元数据行
+  const sepCount = (line.match(/[\/—：:｜]/g) || []).length;
+  if (sepCount >= 3 && line.length < 150) return true;
+
+  return false;
+}
+
 function inferDescription(body) {
+  // Tier 1: 模板"一句话总结" — 最精准
+  const summary = extractSummaryLine(body);
+  if (summary) return clipText(summary, 110);
+
+  // Tier 2: 跳过开头的元数据行，取第一个实质性段落
+  const lines = body.split("\n");
+  for (const line of lines) {
+    const trimmed = line.trim();
+    if (!trimmed) continue;
+    if (isMetadataLine(trimmed)) continue;
+    // 太短的不像正文段落（< 15 字）
+    if (trimmed.length < 15) continue;
+    return clipText(trimmed, 110);
+  }
+
+  // Tier 3: 兜底 — 当前行为（全文化平取前 110 字）
   const plain = body.replace(/[#>*_`[\]()\n\r]/g, "").replace(/\s+/g, " ").trim();
   return clipText(plain || "暂无描述", 110);
 }

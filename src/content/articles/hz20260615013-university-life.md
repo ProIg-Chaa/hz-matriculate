@@ -28,7 +28,7 @@ audience:
 review:
   status: "submitted"
 display:
-  featured: false
+  featured: true
   showDisclaimer: true
 ---
 

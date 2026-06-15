@@ -354,6 +354,7 @@ function buildArticle(record) {
   const hasQuestion = record["是否关联问题"] === "是" && record["关联问题"]?.trim() && record["关联问题"] !== "无";
 
   const reviewStatusMap = {
+    "待审核": "submitted",
     "审核中": "submitted",
     "已通过": "published",
     "已发布": "published",
@@ -474,11 +475,21 @@ async function main() {
 
     console.log(`── ${csvRel} (${rows.length} row(s)) ──`);
 
+    let skippedCount = 0;
+
     for (const row of rows) {
       const record = rowToRecord(header, row);
       const id = record["投稿编号"];
       if (!id) {
         console.warn("  ⚠  Skipping row without 投稿编号");
+        continue;
+      }
+
+      // 只处理审核情况为"待审核"的行，避免多人冲突
+      const reviewStatusRaw = (record["审核情况"] || "").trim();
+      if (reviewStatusRaw !== "待审核") {
+        console.warn(`  ⏭  跳过 #${id}（审核情况: "${reviewStatusRaw || "（空）"}"）`);
+        skippedCount++;
         continue;
       }
 
@@ -506,8 +517,12 @@ async function main() {
 
     // 处理完当前 CSV 后再归档，避免在写入过程中移动文件导致读取失败
     if (!dryRun && rows.length > 0) {
-      const archivedRel = await archiveCsv(csvPath);
-      console.log(`  → archived to ${archivedRel}`);
+      if (skippedCount === rows.length) {
+        console.warn(`  ⚠  CSV 中所有行均被跳过，不归档，请检查审核情况。`);
+      } else {
+        const archivedRel = await archiveCsv(csvPath);
+        console.log(`  → archived to ${archivedRel}`);
+      }
     }
 
     console.log();

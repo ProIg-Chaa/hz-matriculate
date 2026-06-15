@@ -342,7 +342,9 @@ function buildArticle(record) {
     ...publicSchoolInfoTags
   ]);
 
-  const body = (record["自由投稿正文"] || "").trim();
+  const body = (record["自由投稿正文"] || "").trim()
+    .replace(/\n/g, "\n\n")      // CSV 单元格中的单换行 → Markdown 段落分隔
+    .replace(/\n{3,}/g, "\n\n"); // 避免产生过多空行
   tags.push(...extractTemplateTagFields(body));
   const category = inferCategory(tags, body);
   const title = inferTitle(body);

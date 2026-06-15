@@ -104,7 +104,7 @@ const questionCount = allQuestions.length;
       <div class="article-list">
         {
           featuredArticles.length > 0
-            ? featuredArticles.map((article) => <ArticleCard article={article} headingLevel="h3" />)
+            ? featuredArticles.map((article) => <ArticleCard article={article} headingLevel="h3" featured={true} />)
             : <p class="notice">暂未设置精选文章。</p>
         }
       </div>

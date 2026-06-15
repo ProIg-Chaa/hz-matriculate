@@ -5,16 +5,17 @@ import { formatDate, getArticleUrl, getAuthorLabel, getSchoolMajor } from "../li
 interface Props {
   article: Article;
   headingLevel?: "h2" | "h3";
+  featured?: boolean;
 }
 
-const { article, headingLevel = "h2" } = Astro.props;
+const { article, headingLevel = "h2", featured = false } = Astro.props;
 const Heading = headingLevel;
 const author = article.data.author;
 const authorLabel = getAuthorLabel(author);
 const schoolMajor = getSchoolMajor(author);
 ---
 
-<article class="article-card">
+<article class:list={["article-card", { featured: featured }]}>
   <div class="meta">
     <span class="category-pill">{article.data.category}</span>
     <span>更新于 {formatDate(article.data.updated)}</span>

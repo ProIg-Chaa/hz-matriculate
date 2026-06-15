@@ -1,3 +1,18 @@
 ---
-return Astro.redirect(import.meta.env.PUBLIC_SUBMISSION_FORM_URL || "/submit/");
+const url = import.meta.env.PUBLIC_SUBMISSION_FORM_URL || "/submit/";
 ---
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="robots" content="noindex">
+<meta http-equiv="refresh" content={`0;url=${url}`}>
+<title>跳转中…</title>
+<script is:inline>
+  window.location.replace(document.querySelector('meta[http-equiv="refresh"]').content.split('url=')[1]);
+</script>
+</head>
+<body>
+  <p>正在跳转到 <a href={url}>投稿表单</a>…</p>
+</body>
+</html>

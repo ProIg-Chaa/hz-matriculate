@@ -445,6 +445,7 @@ a.card:hover {
 }
 
 .article-card {
+  position: relative;
   display: grid;
   gap: 14px;
   padding: 22px;
@@ -472,12 +473,22 @@ a.card:hover {
   text-decoration: none;
 }
 
+.article-card h2 a::after,
+.article-card h3 a::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}
+
 .article-card p {
   margin: 0;
   color: var(--muted-strong);
 }
 
 .meta {
+  position: relative;
+  z-index: 1;
   display: flex;
   flex-wrap: wrap;
   gap: 8px 12px;
@@ -492,6 +503,8 @@ a.card:hover {
 }
 
 .chips {
+  position: relative;
+  z-index: 1;
   display: flex;
   flex-wrap: wrap;
   gap: 8px;

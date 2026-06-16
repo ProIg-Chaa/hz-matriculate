@@ -357,6 +357,7 @@ function buildArticle(record) {
 
   const reviewStatusMap = {
     "待审核": "submitted",
+    "拟通过": "published",
     "审核中": "submitted",
     "已通过": "published",
     "已发布": "published",
@@ -364,6 +365,7 @@ function buildArticle(record) {
     "退回": "draft"
   };
   const reviewStatus = reviewStatusMap[record["审核情况"]?.trim()] || "submitted";
+  const isFeatured = record["是否精选"]?.trim() === "是";
 
   const frontmatter = [
     `title: ${quoteYaml(title)}`,
@@ -384,7 +386,7 @@ function buildArticle(record) {
     "review:",
     `  status: ${quoteYaml(reviewStatus)}`,
     "display:",
-    "  featured: false",
+    `  featured: ${isFeatured}`,
     "  showDisclaimer: true"
   ].join("\n");
 
@@ -487,9 +489,9 @@ async function main() {
         continue;
       }
 
-      // 只处理审核情况为"待审核"的行，避免多人冲突
+      // 只处理审核情况为"拟通过"的行，避免未经最终确认的内容进入发布目录。
       const reviewStatusRaw = (record["审核情况"] || "").trim();
-      if (reviewStatusRaw !== "待审核") {
+      if (reviewStatusRaw !== "拟通过") {
         console.warn(`  ⏭  跳过 #${id}（审核情况: "${reviewStatusRaw || "（空）"}"）`);
         skippedCount++;
         continue;

@@ -28,6 +28,33 @@ const categoryHints = {
   "发展路径": ["保研", "考研", "就业", "实习", "转专业", "留学", "考公", "出国"]
 };
 
+// 从问题 MD 文件构建标题→slug 映射
+async function buildQuestionTitleToSlugMap() {
+  const questionsDir = path.join(rootDir, "src", "content", "questions");
+  const map = new Map();
+
+  try {
+    const { readdir: ls } = await import("node:fs/promises");
+    const entries = await ls(questionsDir, { withFileTypes: true });
+    const mdFiles = entries.filter((e) => e.isFile() && e.name.endsWith(".md"));
+
+    for (const file of mdFiles) {
+      const content = await readFile(path.join(questionsDir, file.name), "utf8");
+      // 从 frontmatter 中提取 title 字段
+      const titleMatch = content.match(/^title:\s*(?:"([^"]*)"|'([^']*)'|(.+))$/m);
+      if (titleMatch) {
+        const title = (titleMatch[1] || titleMatch[2] || titleMatch[3]).trim();
+        const slug = file.name.replace(/\.md$/, "");
+        map.set(title, slug);
+      }
+    }
+  } catch {
+    console.warn("⚠  无法读取问题目录，跳过问题关联映射。");
+  }
+
+  return map;
+}
+
 // ── CLI ─────────────────────────────────────────────────────────────
 
 const args = process.argv.slice(2);
@@ -328,7 +355,7 @@ function extractTemplateTagFields(body) {
 
 // ── 构建文章 ─────────────────────────────────────────────────
 
-function buildArticle(record) {
+function buildArticle(record, questionSlugMap) {
   const shouldShowSchoolInfo = record["是否展示位次，院校与专业"] === "是";
   const publicSchoolInfoTags = shouldShowSchoolInfo
     ? [record["高考位次"], record["就读院校"], record["就读专业"]]
@@ -345,15 +372,26 @@ function buildArticle(record) {
   const body = (record["自由投稿正文"] || "").trim()
     .replace(/\n/g, "\n\n")      // CSV 单元格中的单换行 → Markdown 段落分隔
     .replace(/\n{3,}/g, "\n\n"); // 避免产生过多空行
+
+  // 将问题标题解析为 slug（需在 category 之前）
+  const hasQuestion = record["是否关联问题"] === "是" && record["关联问题"]?.trim() && record["关联问题"] !== "无";
+  let questionSlug = null;
+  if (hasQuestion) {
+    const questionTitle = record["关联问题"].trim();
+    questionSlug = questionSlugMap.get(questionTitle);
+    if (!questionSlug) {
+      console.warn(`  ⚠  问题标题未匹配: "${questionTitle}"，跳过 question 字段。`);
+    }
+  }
+
   tags.push(...extractTemplateTagFields(body));
-  const category = inferCategory(tags, body);
+  const category = questionSlug ? "问题回答" : inferCategory(tags, body);
   const title = inferTitle(body);
   const description = inferDescription(body);
   const dateStr = record["投稿时间"] ? parseDate(record["投稿时间"]) : new Date().toISOString().slice(0, 10);
   const isAnonymous = record["是否匿名"] === "是";
   const displayName = record["展示昵称"]?.trim() || "匿名校友";
   const hasContact = !!(record["联系方式"]?.trim());
-  const hasQuestion = record["是否关联问题"] === "是" && record["关联问题"]?.trim() && record["关联问题"] !== "无";
 
   const reviewStatusMap = {
     "待审核": "submitted",
@@ -375,7 +413,7 @@ function buildArticle(record) {
     `category: ${quoteYaml(category)}`,
     "tags:",
     yamlList(tags, "  "),
-    ...(hasQuestion ? [`question: ${quoteYaml(record["关联问题"].trim())}`] : []),
+    ...(questionSlug ? [`question: ${quoteYaml(questionSlug)}`] : []),
     "author:",
     `  name: ${quoteYaml(displayName)}`,
     `  graduationYear: ${quoteYaml(record["毕业届数"]?.trim() || "")}`,
@@ -464,6 +502,8 @@ async function main() {
 
   await mkdir(outDir, { recursive: true });
 
+  const questionSlugMap = await buildQuestionTitleToSlugMap();
+
   let totalWritten = 0;
   const allSummaries = [];
 
@@ -497,7 +537,7 @@ async function main() {
         continue;
       }
 
-      const article = buildArticle(record);
+      const article = buildArticle(record, questionSlugMap);
       const outPath = path.join(outDir, article.filename);
 
       allSummaries.push({

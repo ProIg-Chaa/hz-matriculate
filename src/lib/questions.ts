@@ -17,7 +17,11 @@ export function getQuestionAskerLabel(question: Question) {
 
 export function getAnswersForQuestion(question: Question, articles: Article[]) {
   const slug = getQuestionSlug(question);
-  return articles.filter((article) => article.data.category === "问题回答" && article.data.question === slug);
+  return articles.filter(
+    (article) =>
+      article.data.category === "问题回答" &&
+      (article.data.question === slug || article.data.question === question.data.title)
+  );
 }
 
 export function sortQuestionsByUpdatedDesc(questions: Question[]) {

@@ -198,10 +198,7 @@ CONTRIBUTING.md
 1. 将导出的csv文件放入 `article/csv/` 
 2. 执行转换：
 	```bash
-	npm run csv:preview # 预览
-    ```
-    ```bash
-	npm run csv:convert # 转换
+	npm run csv:convert # 转换（加 --dry-run 预览，不归档）
 	```
 
 注：默认扫描 `article/csv/` 内的所有csv，批量处理，转换后自动归档到 `article/csv/archived/` ，防止重复转换（预览时不归档）

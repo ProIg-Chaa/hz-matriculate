@@ -6,12 +6,12 @@
 
 ## 方案
 
-将原脚本拆分为三件套：
+将原脚本拆分：
 
-- **`scripts/lib/csv-utils.mjs`** — 公共工具（CSV 解析、日期格式化、YAML 生成、文件归档）
-- **`scripts/csv-to-articles.mjs`** — 文章逻辑（原 csv-to-md.mjs 改名重构）
-- **`scripts/csv-to-questions.mjs`** — 新建，问题 CSV → MD
-- **`scripts/csv-to-md.mjs`** — 新主入口，读表头自动识别类型并分发
+- **`scripts/lib/csv-utils.mjs`** — 公共（CSV 解析、日期格式化、YAML 生成、文件归档）
+- **`scripts/csv-to-articles.mjs`** — 文章逻辑（原 csv-to-md.mjs 改名）；
+- **`scripts/csv-to-questions.mjs`** — 新建，CSV → MD（问题）；
+- **`scripts/csv-to-md.mjs`** — 新建，**主入口**，读表头自动识别类型并分发。
 
 ## 问题 CSV → MD 映射
 
@@ -30,7 +30,7 @@
 ## 用法
 
 ```bash
-# 自动识别（推荐）
+# 自动识别
 node scripts/csv-to-md.mjs article/csv/xxx.csv --dry-run
 
 # 直接调用子脚本

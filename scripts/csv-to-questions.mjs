@@ -117,9 +117,9 @@ export async function processCsv(csvPath, opts = {}) {
       continue;
     }
 
-    // 只处理"待发布"的行
+    // 只处理"拟通过"的行
     const reviewStatusRaw = (record["审核情况"] || "").trim();
-    if (reviewStatusRaw !== "待发布") {
+    if (reviewStatusRaw !== "拟通过") {
       console.warn(`  ⏭  跳过 #${id}（审核情况: "${reviewStatusRaw || "（空）"}"）`);
       skippedCount++;
       continue;

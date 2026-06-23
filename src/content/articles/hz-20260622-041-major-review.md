@@ -3,7 +3,8 @@ title: "很正常哟"
 description: "很正常哟！首先搞清楚自己是为什么情绪低落？学习？人际关系？原生家庭？一件件事情梳理清楚，找到根本原因，能解决的问题就解决，解决不了的问题可以寻求外界的帮助，比如学习有困难找老师，人际交往出问题跟对方说清楚，原生家庭有矛…"
 date: "2026-06-22"
 updated: "2026-06-22"
-category: "专业体验"
+category: "问题回答"
+question: "Q-20260620-002"
 tags:
   - "其他"
   - "心理压力"
@@ -13,10 +14,10 @@ tags:
   - "化学"
   - "生物"
 author:
-  name: "^-^"
+  name: "匿名校友"
   graduationYear: "2022"
-  anonymous: false
-  contactVisible: true
+  anonymous: true
+  contactVisible: false
 audience:
   - "希望了解真实经验的高中生"
   - "准备做升学或大学生活选择的读者"

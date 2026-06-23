@@ -17,10 +17,17 @@ export function getQuestionAskerLabel(question: Question) {
 
 export function getAnswersForQuestion(question: Question, articles: Article[]) {
   const slug = getQuestionSlug(question);
+  const normalizedSlug = slug.toLowerCase();
+  const title = question.data.title.trim();
+
   return articles.filter(
-    (article) =>
-      article.data.category === "问题回答" &&
-      (article.data.question === slug || article.data.question === question.data.title)
+    (article) => {
+      const linkedQuestion = article.data.question?.trim();
+      return (
+        article.data.category === "问题回答" &&
+        (linkedQuestion?.toLowerCase() === normalizedSlug || linkedQuestion === title)
+      );
+    }
   );
 }
 

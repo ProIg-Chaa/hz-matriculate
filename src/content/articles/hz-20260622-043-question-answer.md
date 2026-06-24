@@ -20,7 +20,7 @@ question: "Q-20260620-003"
 author:
   name: "美好时光海苔"
   graduationYear: "2024"
-  anonymous: true
+  anonymous: false
   contactVisible: true
 audience:
   - "希望了解真实经验的高中生"

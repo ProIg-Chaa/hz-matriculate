@@ -26,7 +26,7 @@ audience:
 review:
   status: "published"
 display:
-  featured: true
+  featured: false
   showDisclaimer: true
 ---
 
